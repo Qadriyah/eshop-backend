@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -10,7 +11,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './users.repository';
 import { UserDocument } from './entities/user.entity';
-import { ProfileRepository } from '../profile/users.profile.repository';
+import { ProfileRepository } from '../profile/profile.repository';
 
 @Injectable()
 export class UsersService {
@@ -29,7 +30,7 @@ export class UsersService {
 
       if (newUser) {
         throw new ConflictException({
-          statusCode: 409,
+          statusCode: HttpStatus.CONFLICT,
           message: [
             {
               field: 'email',
@@ -50,10 +51,13 @@ export class UsersService {
     } catch (err) {
       this.logger.error('user.service.create', err);
       if (err.status !== 500) {
-        throw err;
+        return {
+          statusCode: err.status,
+          ...err.response,
+        };
       }
       throw new InternalServerErrorException({
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: [
           {
             field: 'email',
@@ -69,11 +73,14 @@ export class UsersService {
       return await this.userRepository.find({ deleted: false });
     } catch (err) {
       this.logger.error('user.service.findAll', err);
-      if (err.status === 403) {
-        throw err;
+      if (err.status !== 500) {
+        return {
+          statusCode: err.status,
+          ...err.response,
+        };
       }
       throw new InternalServerErrorException({
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: [
           {
             field: 'email',
@@ -89,11 +96,14 @@ export class UsersService {
       return await this.userRepository.findOne({ _id: id });
     } catch (err) {
       this.logger.error('user.service.findOne', err);
-      if (err.status === 403) {
-        throw err;
+      if (err.status !== 500) {
+        return {
+          statusCode: err.status,
+          ...err.response,
+        };
       }
       throw new InternalServerErrorException({
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: [
           {
             field: 'email',
@@ -115,11 +125,14 @@ export class UsersService {
       );
     } catch (err) {
       this.logger.error('user.service.update', err);
-      if (err.status === 403) {
-        throw err;
+      if (err.status !== 500) {
+        return {
+          statusCode: err.status,
+          ...err.response,
+        };
       }
       throw new InternalServerErrorException({
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: [
           {
             field: 'email',
@@ -138,11 +151,14 @@ export class UsersService {
       );
     } catch (err) {
       this.logger.error('user.service.remove', err);
-      if (err.status === 403) {
-        throw err;
+      if (err.status !== 500) {
+        return {
+          statusCode: err.status,
+          ...err.response,
+        };
       }
       throw new InternalServerErrorException({
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: [
           {
             field: 'email',

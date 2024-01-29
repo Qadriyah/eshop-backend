@@ -10,6 +10,7 @@ import { ProfileModule } from '../profile/profile.module';
 @Module({
   controllers: [UsersController],
   providers: [UsersService, UserRepository, UtilityService],
+  exports: [UserRepository],
   imports: [
     ProfileModule,
     MongooseModule.forFeature([

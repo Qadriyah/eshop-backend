@@ -1,12 +1,13 @@
 import {
   ForbiddenException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ProfileRepository } from './users.profile.repository';
+import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../users/users.repository';
 import { ProfileDocument } from './entities/profile.entity';
 
@@ -25,7 +26,7 @@ export class ProfileService {
       });
       if (!user) {
         throw new ForbiddenException({
-          statusCode: 404,
+          statusCode: HttpStatus.NOT_FOUND,
           message: [
             {
               field: 'user',
@@ -38,11 +39,14 @@ export class ProfileService {
       return await this.profileRepository.create(createProfileDto);
     } catch (err) {
       this.logger.error('profile.service.create', err);
-      if (err.status === 403) {
-        throw err;
+      if (err.status !== 500) {
+        return {
+          statusCode: err.status,
+          ...err.response,
+        };
       }
       throw new InternalServerErrorException({
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: [
           {
             field: 'firstName',
@@ -67,11 +71,14 @@ export class ProfileService {
       ]);
     } catch (err) {
       this.logger.error('profile.service.findOne', err);
-      if (err.status === 403) {
-        throw err;
+      if (err.status !== 500) {
+        return {
+          statusCode: err.status,
+          ...err.response,
+        };
       }
       throw new InternalServerErrorException({
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: [
           {
             field: 'firstName',

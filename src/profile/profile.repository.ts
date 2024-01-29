@@ -11,20 +11,20 @@ export class ProfileRepository {
     private readonly profileModel: Model<ProfileDocument>,
   ) {}
 
-  create(user: CreateProfileDto): Promise<ProfileDocument> {
+  create(user: CreateProfileDto) {
     try {
       const profile = new this.profileModel(user);
       return profile.save();
     } catch (err) {}
   }
 
-  findOne(filterQuery: FilterQuery<Profile>): Promise<ProfileDocument | null> {
+  findOne(filterQuery: FilterQuery<Profile>) {
     try {
       return this.profileModel.findOne(filterQuery);
     } catch (err) {}
   }
 
-  find(filterQuery: FilterQuery<Profile>): Promise<ProfileDocument[]> {
+  find(filterQuery: FilterQuery<Profile>) {
     try {
       return this.profileModel.find(filterQuery);
     } catch (err) {}
@@ -33,10 +33,12 @@ export class ProfileRepository {
   findOneAndUpdate(
     filterQuery: FilterQuery<Profile>,
     user: Partial<Profile>,
-  ): Promise<ProfileDocument> {
+    options = {},
+  ) {
     try {
       return this.profileModel.findByIdAndUpdate(filterQuery, user, {
         new: true,
+        ...options,
       });
     } catch (err) {}
   }
