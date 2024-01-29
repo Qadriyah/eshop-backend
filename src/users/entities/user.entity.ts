@@ -5,8 +5,15 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({
   timestamps: true,
-  toJSON: { virtuals: true },
   toObject: { virtuals: true },
+  toJSON: {
+    virtuals: true,
+    transform: function (_doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      delete ret.__v;
+    },
+  },
 })
 export class User {
   @Prop({ required: true })

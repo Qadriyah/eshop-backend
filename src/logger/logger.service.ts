@@ -1,9 +1,11 @@
 import * as winston from 'winston';
 import { Injectable } from '@nestjs/common';
-import config from '../config/config';
+import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class LoggerService {
+  constructor(private readonly configService: ConfigService) {}
+
   private createLogger() {
     const logger = winston.createLogger({
       format: winston.format.combine(
@@ -18,7 +20,7 @@ export class LoggerService {
       transports: [],
     });
 
-    if (config.NODE_ENV !== 'production') {
+    if (this.configService.get('NODE_ENV') !== 'production') {
       logger.add(
         new winston.transports.Console({
           format: winston.format.simple(),
@@ -29,7 +31,7 @@ export class LoggerService {
   }
 
   log(message: string) {
-    if (config.NODE_ENV !== 'test') {
+    if (this.configService.get('NODE_ENV') !== 'test') {
       const logger = this.createLogger();
       logger.log({
         level: 'info',
@@ -39,7 +41,7 @@ export class LoggerService {
   }
 
   error(functionName: string, error: any) {
-    if (config.NODE_ENV !== 'test') {
+    if (this.configService.get('NODE_ENV') !== 'test') {
       const logger = this.createLogger();
       error = error instanceof Error ? error.message : error;
       logger.log({
@@ -53,7 +55,7 @@ export class LoggerService {
   }
 
   warn(functionName: string, error: any) {
-    if (config.NODE_ENV !== 'test') {
+    if (this.configService.get('NODE_ENV') !== 'test') {
       const logger = this.createLogger();
       error = error instanceof Error ? error.message : error;
       logger.log({
