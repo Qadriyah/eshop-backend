@@ -19,7 +19,12 @@ export class UtilityService {
     return error.details.map((err) => {
       let message = err.message.replace(/"/g, '');
       if (err.type === 'string.pattern.base') {
-        message = `${err.context?.label} should be a valid ObjectId`;
+        const { key } = err.context;
+        if (err.context?.label === 'password') {
+          message = `${key} should be at least 8 characters long and should contain a digit, uppercase and lowercase letters`;
+        } else {
+          message = `${err.context?.label} should be a valid ObjectId`;
+        }
       }
       const fieldError: FieldError = {
         field: err.context?.key ?? '',

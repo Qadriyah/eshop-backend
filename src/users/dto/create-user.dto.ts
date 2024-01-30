@@ -11,7 +11,9 @@ export class CreateUserDto {
 
 export const CreateUserSchema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().required(),
+  password: Joi.string()
+    .regex(/^(?=.{8,}$)(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$/)
+    .required(),
   roles: Joi.array().items(Joi.string().required()).required(),
   avator: Joi.string(),
 }).options({
@@ -22,6 +24,4 @@ export class UserResponse {
   statusCode: number;
   user?: User;
   users?: User[];
-  accessToken?: string;
-  refreshToken?: string;
 }
