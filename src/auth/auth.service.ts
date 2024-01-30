@@ -53,7 +53,7 @@ export class AuthService {
           email: createAuthDto.email,
           deleted: false,
         })
-        .select('email password roles');
+        ?.select('email password roles');
 
       if (!user) {
         throw new NotFoundException({

@@ -63,7 +63,7 @@ export class ProfileService {
 
   async findOne(id: string): Promise<ProfileDocument> {
     try {
-      return (await this.profileRepository.findOne({ user: id })).populate([
+      return (await this.profileRepository.findOne({ user: id }))?.populate([
         {
           path: 'user',
           select: 'email avator',

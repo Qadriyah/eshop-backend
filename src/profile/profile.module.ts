@@ -7,6 +7,7 @@ import { UtilityService } from '../utility/utility.service';
 import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../users/users.repository';
 import { User, UserSchema } from '../users/entities/user.entity';
+import { ConfigModule } from '../config/config.module';
 
 @Module({
   controllers: [ProfileController],
@@ -18,6 +19,7 @@ import { User, UserSchema } from '../users/entities/user.entity';
   ],
   exports: [ProfileService, ProfileRepository],
   imports: [
+    ConfigModule.register({ folder: './config' }),
     MongooseModule.forFeature([
       {
         name: Profile.name,
