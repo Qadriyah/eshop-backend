@@ -39,7 +39,6 @@ export class ProfileController {
     @Req() request: Request & { user: UserDocument },
   ): Promise<ProfileDocument> {
     const { user } = request;
-    console.log(user, '>>>>>>>>>');
     return await this.profileService.findOne(user.id);
   }
 

@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { User } from '../entities/user.entity';
+import { UserDocument } from '../entities/user.entity';
 
 export class CreateUserDto {
   email: string;
@@ -22,6 +22,6 @@ export const CreateUserSchema = Joi.object({
 
 export class UserResponse {
   statusCode: number;
-  user?: User;
-  users?: User[];
+  user?: UserDocument;
+  users?: UserDocument[];
 }
