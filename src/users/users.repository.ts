@@ -7,23 +7,24 @@ import { CreateUserDto } from './dto/create-user.dto';
 @Injectable()
 export class UserRepository {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
-  create(user: CreateUserDto): Promise<UserDocument> {
+  create(user: CreateUserDto) {
     try {
       const newUser = new this.userModel(user);
       return newUser.save();
     } catch (err) {}
   }
 
-  findOne(filterQuery: FilterQuery<User>): Promise<UserDocument | null> {
+  findOne(filterQuery: FilterQuery<User>) {
     try {
       return this.userModel.findOne(filterQuery);
     } catch (err) {}
   }
 
-  find(filterQuery: FilterQuery<User>): Promise<UserDocument[]> {
+  find(filterQuery: FilterQuery<User>) {
     try {
       return this.userModel.find(filterQuery);
     } catch (err) {}
@@ -32,10 +33,12 @@ export class UserRepository {
   findOneAndUpdate(
     filterQuery: FilterQuery<User>,
     user: Partial<User>,
-  ): Promise<UserDocument> {
+    options = {},
+  ) {
     try {
       return this.userModel.findByIdAndUpdate(filterQuery, user, {
         new: true,
+        ...options,
       });
     } catch (err) {}
   }

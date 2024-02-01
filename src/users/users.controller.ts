@@ -10,7 +10,11 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto, UserResponse } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { CreateUserValidationPipe } from './users.pipe';
+import {
+  CreateUserValidationPipe,
+  UpdateUserValidationPipe,
+} from './users.pipe';
+import { UserDocument } from './entities/user.entity';
 
 @Controller('users')
 export class UsersController {
@@ -23,7 +27,11 @@ export class UsersController {
     const user = await this.usersService.create(data);
     return {
       statusCode: 201,
-      user,
+      user: {
+        id: user._id,
+        email: user.email,
+        refreshToken: user.refreshToken,
+      } as UserDocument,
     };
   }
 
@@ -33,17 +41,20 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  async findOne(@Param('id') id: string): Promise<UserDocument> {
+    return await this.usersService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  update(
+    @Param('id') id: string,
+    @Body(UpdateUserValidationPipe) updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return this.usersService.remove(id);
   }
 }
