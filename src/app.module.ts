@@ -9,6 +9,7 @@ import { UtilityModule } from './utility/utility.module';
 import { ProfileModule } from './profile/profile.module';
 import { ConfigModule } from './config/config.module';
 import { AuthModule } from './auth/auth.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthModule } from './auth/auth.module';
     ProfileModule,
     ConfigModule.register({ folder: './config' }),
     AuthModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

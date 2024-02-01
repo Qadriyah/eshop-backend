@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import * as Joi from 'joi';
-import { Profile } from '../entities/profile.entity';
+import { ProfileDocument } from '../entities/profile.entity';
 
 export class CreateProfileDto {
   user: mongoose.Schema.Types.ObjectId | any;
@@ -18,6 +18,6 @@ export const CreateProfileSchema = Joi.object({
 
 export class UserResponse {
   statusCode: number;
-  profile?: Profile;
-  profiles?: Profile[];
+  profile?: ProfileDocument;
+  profiles?: ProfileDocument[];
 }
