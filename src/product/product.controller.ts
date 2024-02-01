@@ -13,7 +13,10 @@ import { ProductService } from './product.service';
 import { CreateProductDto, ProductResponse } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { CreateProductValidationPipe } from './product.pipe';
+import {
+  CreateProductValidationPipe,
+  UpdateProductValidationPipe,
+} from './product.pipe';
 
 @UseGuards(AuthGuard)
 @Controller('products')
@@ -55,7 +58,7 @@ export class ProductController {
   @Patch(':productId')
   async update(
     @Param('productId') productId: string,
-    @Body() updateProductDto: UpdateProductDto,
+    @Body(UpdateProductValidationPipe) updateProductDto: UpdateProductDto,
   ): Promise<ProductResponse> {
     const product = await this.productService.update(
       productId,

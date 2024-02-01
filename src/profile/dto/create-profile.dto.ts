@@ -18,6 +18,7 @@ export const CreateProfileSchema = Joi.object({
 
 export class UserResponse {
   statusCode: number;
+  message?: string;
   profile?: ProfileDocument;
   profiles?: ProfileDocument[];
 }
