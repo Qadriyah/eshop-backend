@@ -2,9 +2,9 @@ import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 import {
   CreateProductDto,
   CreateProductSchema,
-  UpdateProductSchema,
 } from './dto/create-product.dto';
 import { UtilityService } from '../utility/utility.service';
+import { UpdateProductSchema } from './dto/update-product.dto';
 
 @Injectable()
 export class CreateProductValidationPipe implements PipeTransform {

@@ -17,6 +17,9 @@ export type ProductDocument = HydratedDocument<Product>;
   },
 })
 export class Product {
+  @Prop()
+  sku: string;
+
   @Prop({ required: true })
   name: string;
 
@@ -43,6 +46,27 @@ export class Product {
 
   @Prop()
   fixedDiscount: number;
+
+  @Prop()
+  quantity: number;
+
+  @Prop()
+  stock: number;
+
+  @Prop({ default: true })
+  allowBackorders: boolean;
+
+  @Prop()
+  weight: number;
+
+  @Prop()
+  length: number;
+
+  @Prop()
+  width: number;
+
+  @Prop()
+  height: number;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
