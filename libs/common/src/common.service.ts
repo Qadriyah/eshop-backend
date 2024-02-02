@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationError } from 'joi';
 import { Types } from 'mongoose';
-import { UserDocument } from '../users/entities/user.entity';
 
 type FieldError = {
   field: string;
@@ -13,8 +12,13 @@ type Payload = {
   roles: string[];
 };
 
+type VisitorPayload = {
+  email: string;
+  roles: string[];
+};
+
 @Injectable()
-export class UtilityService {
+export class CommonService {
   formatError(error: ValidationError): FieldError[] {
     return error.details.map((err) => {
       let message = err.message.replace(/"/g, '');
@@ -34,10 +38,17 @@ export class UtilityService {
     });
   }
 
-  getTokenPayload(user: UserDocument): Payload {
+  getTokenPayload(user: Payload): Payload {
     return {
       id: user.id,
       roles: user.roles,
+    };
+  }
+
+  getVisitorTokenPayload(email: string): VisitorPayload {
+    return {
+      email,
+      roles: ['Visitor'],
     };
   }
 }

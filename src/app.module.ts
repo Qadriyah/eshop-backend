@@ -3,24 +3,40 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
-import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import * as Joi from 'joi';
+import { CommonModule } from '@app/common';
 import { LoggerModule } from './logger/logger.module';
-import { UtilityModule } from './utility/utility.module';
 import { ProfileModule } from './profile/profile.module';
-import { ConfigModule } from './config/config.module';
 import { AuthModule } from './auth/auth.module';
 import { ProductModule } from './product/product.module';
+import { SalesModule } from './sales/sales.module';
+import { CustomersModule } from './customers/customers.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(process.env.MONGO_URL as string),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: Joi.object({
+        MONGO_URL: Joi.string().required(),
+        CLIENT_ID: Joi.string().required(),
+        CLIENT_SECRET: Joi.string().required(),
+        REDIRECT_URL: Joi.string().required(),
+        NODE_ENV: Joi.string(),
+        JWT_SECRET: Joi.string().required(),
+        JWT_TTL: Joi.string().required(),
+        PORT: Joi.number().required(),
+      }),
+      // envFilePath: `./config/${process.env.NODE_ENV}.env`,
+    }),
+    CommonModule,
     UsersModule,
     LoggerModule,
-    UtilityModule,
     ProfileModule,
-    ConfigModule.register({ folder: './config' }),
     AuthModule,
     ProductModule,
+    SalesModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,9 +9,9 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
 import * as randtoken from 'rand-token';
+import { CommonService } from '@app/common';
+import { ConfigService } from '@nestjs/config';
 import { UserRepository } from '../users/users.repository';
-import { UtilityService } from '../utility/utility.service';
-import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,7 +19,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private userRepository: UserRepository,
-    private utilService: UtilityService,
+    private commonService: CommonService,
     private configService: ConfigService,
   ) {}
 
@@ -30,7 +30,12 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
-        message: [{ field: '', message: 'Token is missing in the request' }],
+        message: [
+          {
+            field: '',
+            message: 'Token is missing in the request',
+          },
+        ],
       });
     }
 
@@ -49,7 +54,7 @@ export class AuthGuard implements CanActivate {
           message: [{ field: '', message: 'Token is missing in the request' }],
         });
       }
-      request['user'] = payload;
+      request['user'] = user;
       return true;
     } catch (err) {
       this.logger.error('AuthGuard.canActivate', err);
@@ -76,7 +81,10 @@ export class AuthGuard implements CanActivate {
             ],
           });
         }
-        const payload = this.utilService.getTokenPayload(user);
+        const payload = this.commonService.getTokenPayload({
+          id: user.id,
+          roles: user.roles,
+        });
         const accessToken = await this.jwtService.signAsync(payload);
         const rToken = randtoken.uid(256);
         user.refreshToken = rToken;
@@ -85,7 +93,7 @@ export class AuthGuard implements CanActivate {
           { refreshToken: rToken },
         );
 
-        request['user'] = payload;
+        request['user'] = user;
         response.set(
           'Access-Control-Expose-Headers',
           'x-access-token, x-refresh-token',

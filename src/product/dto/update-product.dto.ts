@@ -1,7 +1,7 @@
 import * as Joi from 'joi';
 import { PickType } from '@nestjs/mapped-types';
+import { DISCOUNT_TYPES, PRODUCT_STATUS } from '@app/common/constants';
 import { CreateProductDto } from './create-product.dto';
-import { DISCOUNT_TYPES, PRODUCT_STATUS } from '../../config/constants';
 
 export class UpdateProductDto extends PickType(CreateProductDto, [
   'sku',

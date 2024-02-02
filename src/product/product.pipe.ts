@@ -3,17 +3,17 @@ import {
   CreateProductDto,
   CreateProductSchema,
 } from './dto/create-product.dto';
-import { UtilityService } from '../utility/utility.service';
 import { UpdateProductSchema } from './dto/update-product.dto';
+import { CommonService } from '@app/common';
 
 @Injectable()
 export class CreateProductValidationPipe implements PipeTransform {
-  constructor(private utilService: UtilityService) {}
+  constructor(private commonService: CommonService) {}
 
   transform(value: CreateProductDto) {
     const { error } = CreateProductSchema.validate(value);
     if (error) {
-      const errors = this.utilService.formatError(error);
+      const errors = this.commonService.formatError(error);
       throw new BadRequestException(errors);
     }
     return value;
@@ -22,12 +22,12 @@ export class CreateProductValidationPipe implements PipeTransform {
 
 @Injectable()
 export class UpdateProductValidationPipe implements PipeTransform {
-  constructor(private utilService: UtilityService) {}
+  constructor(private commonService: CommonService) {}
 
   transform(value: CreateProductDto) {
     const { error } = UpdateProductSchema.validate(value);
     if (error) {
-      const errors = this.utilService.formatError(error);
+      const errors = this.commonService.formatError(error);
       throw new BadRequestException(errors);
     }
     return value;

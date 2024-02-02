@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { DISCOUNT_TYPES, PRODUCT_STATUS } from '../../config/constants';
+import { DISCOUNT_TYPES, PRODUCT_STATUS } from '@app/common/constants';
 import { ProductDocument } from '../entities/product.entity';
 
 export class CreateProductDto {

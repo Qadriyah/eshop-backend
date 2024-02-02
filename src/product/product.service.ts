@@ -4,11 +4,11 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { PRODUCT_STATUS } from '@app/common/constants';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductRepository } from './product.repository';
 import { ProductDocument } from './entities/product.entity';
-import { PRODUCT_STATUS } from '../config/constants';
 
 @Injectable()
 export class ProductService {
@@ -17,8 +17,11 @@ export class ProductService {
 
   async create(createProductDto: CreateProductDto): Promise<ProductDocument> {
     try {
-      const product = await this.productRepo.create(createProductDto);
-      return product;
+      const product = await this.productRepo.create({
+        ...createProductDto,
+      } as ProductDocument);
+
+      return product as ProductDocument;
     } catch (err) {
       this.logger.error('product.service.create', err);
       if (err.status !== 500) {
