@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 import { ProfileDocument } from '../entities/profile.entity';
 
 export class CreateProfileDto {
-  user: mongoose.Schema.Types.ObjectId | any;
+  user: mongoose.Schema.Types.ObjectId;
   firstName?: string;
   lastName?: string;
 }

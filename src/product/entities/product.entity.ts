@@ -1,6 +1,6 @@
+import { DISCOUNT_TYPES, PRODUCT_STATUS } from '@app/common/constants';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { DISCOUNT_TYPES, PRODUCT_STATUS } from '../../config/constants';
 
 export type ProductDocument = HydratedDocument<Product>;
 

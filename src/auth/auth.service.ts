@@ -10,11 +10,17 @@ import { JwtService } from '@nestjs/jwt';
 import * as randtoken from 'rand-token';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
-import { AuthResponse, CreateAuthDto } from './dto/create-auth.dto';
+import {
+  AuthResponse,
+  CreateAuthDto,
+  CreateVisitorAuthDto,
+} from './dto/create-auth.dto';
 import { UserRepository } from '../users/users.repository';
-import { UtilityService } from '../utility/utility.service';
-import { ConfigService } from '../config/config.service';
 import { ProfileRepository } from '../profile/profile.repository';
+import { ConfigService } from '@nestjs/config';
+import { CommonService } from '@app/common';
+import { UserDocument } from '../users/entities/user.entity';
+import { ProfileDocument } from '../profile/entities/profile.entity';
 
 type UserInfoType = {
   sub: string;
@@ -34,7 +40,7 @@ export class AuthService {
 
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly utilService: UtilityService,
+    private readonly commonService: CommonService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly profileRepository: ProfileRepository,
@@ -86,11 +92,14 @@ export class AuthService {
 
       const refreshToken = randtoken.uid(256);
       await this.userRepository.findOneAndUpdate(
-        { _id: user.id },
+        { _id: user._id },
         { refreshToken },
       );
 
-      const payload = this.utilService.getTokenPayload(user);
+      const payload = this.commonService.getTokenPayload({
+        id: user._id,
+        roles: user.roles,
+      });
       const accessToken = await this.jwtService.signAsync(payload);
 
       return {
@@ -160,21 +169,21 @@ export class AuthService {
       const hashedPassword = await bcrypt.hash(randtoken.uid(16), 10);
 
       if (!user) {
-        user = await this.userRepository.create({
+        user = (await this.userRepository.create({
           email: userInfo.email,
           password: hashedPassword,
           roles: ['Customer'],
           avator: userInfo.picture,
           refreshToken,
-        });
+        } as UserDocument)) as UserDocument;
         await this.profileRepository.create({
           user: user.id,
           firstName: userInfo.given_name,
           lastName: userInfo.family_name,
-        });
+        } as ProfileDocument);
       } else {
         await this.userRepository.findOneAndUpdate(
-          { _id: user.id },
+          { _id: user._id },
           {
             refreshToken,
             email: userInfo.email,
@@ -182,9 +191,9 @@ export class AuthService {
           },
         );
         await this.profileRepository.findOneAndUpdate(
-          { user: user.id },
+          { user: user._id },
           {
-            user: user.id,
+            user: user._id,
             firstName: userInfo.given_name,
             lastName: userInfo.family_name,
           },
@@ -192,7 +201,10 @@ export class AuthService {
         );
       }
 
-      const payload = this.utilService.getTokenPayload(user);
+      const payload = this.commonService.getTokenPayload({
+        id: user.id,
+        roles: user.roles,
+      });
       const accessToken = await this.jwtService.signAsync(payload);
 
       return {
@@ -202,6 +214,29 @@ export class AuthService {
       };
     } catch (err) {
       this.logger.error('auth.service.getAuth', err);
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: [
+          {
+            field: 'email',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async loginVisitor(email: string): Promise<AuthResponse> {
+    try {
+      const payload = this.commonService.getVisitorTokenPayload(email);
+      const accessToken = await this.jwtService.signAsync(payload);
+
+      return {
+        statusCode: HttpStatus.OK,
+        accessToken,
+      };
+    } catch (err) {
+      this.logger.error('auth.service.loginVisitor', err);
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: [

@@ -12,6 +12,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './users.repository';
 import { UserDocument } from './entities/user.entity';
 import { ProfileRepository } from '../profile/profile.repository';
+import { ProfileDocument } from '../profile/entities/profile.entity';
 
 @Injectable()
 export class UsersService {
@@ -23,12 +24,12 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     try {
-      let newUser = await this.userRepository.findOne({
+      const user = await this.userRepository.findOne({
         email: createUserDto.email,
         deleted: false,
       });
 
-      if (newUser) {
+      if (user) {
         throw new ConflictException({
           statusCode: HttpStatus.CONFLICT,
           message: [
@@ -40,14 +41,17 @@ export class UsersService {
         });
       }
 
-      newUser = await this.userRepository.create({
+      const newUser = await this.userRepository.create({
         ...createUserDto,
         password: await bcrypt.hash(createUserDto.password, 10),
         refreshToken: randtoken.uid(256),
-      });
+      } as UserDocument);
 
-      await this.profileRepository.create({ user: newUser._id });
-      return newUser;
+      await this.profileRepository.create({
+        user: newUser._id,
+      } as unknown as ProfileDocument);
+
+      return newUser as UserDocument;
     } catch (err) {
       this.logger.error('user.service.create', err);
       if (err.status !== 500) {
