@@ -9,8 +9,12 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { AuthResponse, CreateAuthDto } from './dto/create-auth.dto';
-import { AuthPipe } from './auth.pipe';
+import {
+  AuthResponse,
+  CreateAuthDto,
+  CreateVisitorAuthDto,
+} from './dto/create-auth.dto';
+import { AuthPipe, VisitorAuthPipe } from './auth.pipe';
 
 @Controller('auth')
 export class AuthController {
@@ -23,12 +27,26 @@ export class AuthController {
     return await this.authService.create(createAuthDto);
   }
 
+  @Post('visitor')
+  async loginVisitor(
+    @Body(VisitorAuthPipe) creadteAuthDto: CreateVisitorAuthDto,
+    @Res() response: Response,
+  ): Promise<AuthResponse> {
+    await this.authService.loginVisitor(creadteAuthDto.email, response);
+    return response.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+    });
+  }
+
   @Post('google-auth-url')
   async getAuthUrl(@Res() response: Response) {
     response.header('Access-Control-Allow-Origin', '*');
     response.header('Referrer-Policy', 'no-referrer-when-downgrade');
     const authUrl = await this.authService.getGoogleAuthourizedUrl();
-    return response.status(HttpStatus.OK).json({ url: authUrl });
+    return response.status(HttpStatus.OK).json({
+      url: authUrl,
+    });
   }
 
   @Get('google-auth')

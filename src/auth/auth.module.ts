@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { ProfileModule } from '../profile/profile.module';
 import { CommonService } from '@app/common';
+import { VisitorModule } from './visitor/visitor.module';
 
 @Module({
   controllers: [AuthController],
@@ -18,6 +19,7 @@ import { CommonService } from '@app/common';
       secret: process.env.JWT_SECRET as string,
       signOptions: { expiresIn: process.env.JWT_TTL as string },
     }),
+    VisitorModule,
   ],
 })
 export class AuthModule {}

@@ -18,11 +18,11 @@ import {
   UpdateProductValidationPipe,
 } from './product.pipe';
 
-@UseGuards(AuthGuard)
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   async create(
     @Body(CreateProductValidationPipe) createProductDto: CreateProductDto,
@@ -55,6 +55,7 @@ export class ProductController {
     };
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':productId')
   async update(
     @Param('productId') productId: string,
@@ -71,6 +72,7 @@ export class ProductController {
     };
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':productId')
   async remove(
     @Param('productId') productId: string,

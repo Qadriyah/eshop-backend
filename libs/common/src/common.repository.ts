@@ -17,7 +17,7 @@ export abstract class AbstractRepository<TDocument> {
       ...document,
     });
 
-    return doc.save(options);
+    return doc.save(options) as unknown as TDocument;
   }
 
   findOne(filterQuery: FilterQuery<TDocument>, options?: QueryOptions) {
