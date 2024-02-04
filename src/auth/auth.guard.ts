@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import * as randtoken from 'rand-token';
 import { CommonService } from '@app/common';
 import { ConfigService } from '@nestjs/config';
@@ -24,8 +24,7 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
-    const response = context.switchToHttp().getResponse<Response>();
+    const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException({
@@ -43,19 +42,8 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get('JWT_SECRET'),
       });
-      const user = await this.userRepository.findOne({
-        _id: payload.id,
-        deleted: false,
-      });
 
-      if (!user) {
-        throw new UnauthorizedException({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: [{ field: '', message: 'Token is missing in the request' }],
-        });
-      }
-      request['user'] = user;
-      return true;
+      return await this.setAuthUser(payload.id, context);
     } catch (err) {
       this.logger.error('AuthGuard.canActivate', err);
       if (err.name === 'TokenExpiredError') {
@@ -64,47 +52,23 @@ export class AuthGuard implements CanActivate {
           throw new UnauthorizedException({
             statusCode: HttpStatus.UNAUTHORIZED,
             message: [
-              { field: '', message: 'Token is missing in the request' },
+              {
+                field: '',
+                message: 'Token is missing in the request',
+              },
             ],
           });
         }
-        const user = await this.userRepository.findOne({
-          refreshToken,
-          deleted: false,
-        });
-
-        if (!user) {
-          throw new UnauthorizedException({
-            statusCode: HttpStatus.UNAUTHORIZED,
-            message: [
-              { field: '', message: 'Token is missing in the request' },
-            ],
-          });
-        }
-        const payload = this.commonService.getTokenPayload({
-          id: user.id,
-          roles: user.roles,
-        });
-        const accessToken = await this.jwtService.signAsync(payload);
-        const rToken = randtoken.uid(256);
-        user.refreshToken = rToken;
-        await this.userRepository.findOneAndUpdate(
-          { _id: user.id },
-          { refreshToken: rToken },
-        );
-
-        request['user'] = user;
-        response.set(
-          'Access-Control-Expose-Headers',
-          'x-access-token, x-refresh-token',
-        );
-        response.set('x-access-token', accessToken);
-        response.set('x-refresh-token', rToken);
-        return true;
+        return await this.refreshToken(refreshToken, context);
       }
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
-        message: [{ field: '', message: 'Token is missing in the request' }],
+        message: [
+          {
+            field: '',
+            message: 'Token is missing in the request',
+          },
+        ],
       });
     }
   }
@@ -116,5 +80,75 @@ export class AuthGuard implements CanActivate {
 
   private extractRefreshTokenFromHeader(request: Request): string | undefined {
     return request.headers['x-refresh-token'] as string;
+  }
+
+  private async refreshToken(
+    token: string,
+    context: ExecutionContext,
+  ): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const response = context.switchToHttp().getResponse();
+    const user = await this.userRepository.findOne({
+      refreshToken: token,
+      deleted: false,
+    });
+
+    if (!user) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: [
+          {
+            field: '',
+            message: 'Token is missing in the request',
+          },
+        ],
+      });
+    }
+    const payload = this.commonService.getTokenPayload({
+      id: user.id,
+      roles: user.roles,
+    });
+    const accessToken = await this.jwtService.signAsync(payload);
+    const rToken = randtoken.uid(256);
+    user.refreshToken = rToken;
+    await this.userRepository.findOneAndUpdate(
+      { _id: user.id },
+      { refreshToken: rToken },
+    );
+
+    request.user = user;
+    response.set(
+      'Access-Control-Expose-Headers',
+      'x-access-token, x-refresh-token',
+    );
+    response.set('x-access-token', accessToken);
+    response.set('x-refresh-token', rToken);
+    return true;
+  }
+
+  private async setAuthUser(
+    userId: string,
+    context: ExecutionContext,
+  ): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const user = await this.userRepository.findOne({
+      _id: userId,
+      deleted: false,
+    });
+
+    if (!user) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: [
+          {
+            field: '',
+            message: 'Token is missing in the request',
+          },
+        ],
+      });
+    }
+
+    request.user = user;
+    return true;
   }
 }

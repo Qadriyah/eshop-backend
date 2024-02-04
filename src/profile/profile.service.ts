@@ -36,7 +36,9 @@ export class ProfileService {
         });
       }
 
-      return await this.profileRepository.create(createProfileDto);
+      return this.profileRepository.create({
+        ...createProfileDto,
+      } as unknown as ProfileDocument);
     } catch (err) {
       this.logger.error('profile.service.create', err);
       if (err.status !== 500) {
@@ -63,12 +65,15 @@ export class ProfileService {
 
   async findOne(id: string): Promise<ProfileDocument> {
     try {
-      return (await this.profileRepository.findOne({ user: id }))?.populate([
-        {
-          path: 'user',
-          select: 'email avator',
-        },
-      ]);
+      const profile = await this.profileRepository
+        .findOne({ user: id })
+        ?.populate([
+          {
+            path: 'user',
+            select: 'email avator',
+          },
+        ]);
+      return profile;
     } catch (err) {
       this.logger.error('profile.service.findOne', err);
       if (err.status !== 500) {

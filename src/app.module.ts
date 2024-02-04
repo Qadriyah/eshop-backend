@@ -25,6 +25,7 @@ import { CustomersModule } from './customers/customers.module';
         NODE_ENV: Joi.string(),
         JWT_SECRET: Joi.string().required(),
         JWT_TTL: Joi.string().required(),
+        JWT_TTL_SEC: Joi.number().required(),
         PORT: Joi.number().required(),
       }),
       // envFilePath: `./config/${process.env.NODE_ENV}.env`,

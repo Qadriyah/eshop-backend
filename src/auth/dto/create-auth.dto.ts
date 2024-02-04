@@ -4,7 +4,6 @@ export class CreateAuthDto {
   email: string;
   password: string;
 }
-
 export class CreateVisitorAuthDto {
   email: string;
 }
@@ -16,8 +15,15 @@ export const CreateAuthSchema = Joi.object({
   abortEarly: false,
 });
 
+export const CreateVisitorAuthSchema = Joi.object({
+  email: Joi.string().email().required(),
+}).options({
+  abortEarly: false,
+});
+
 export class AuthResponse {
   statusCode: number;
-  accessToken: string;
+  message?: string;
+  accessToken?: string;
   refreshToken?: string;
 }

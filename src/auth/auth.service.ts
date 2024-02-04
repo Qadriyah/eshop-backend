@@ -21,6 +21,7 @@ import { ConfigService } from '@nestjs/config';
 import { CommonService } from '@app/common';
 import { UserDocument } from '../users/entities/user.entity';
 import { ProfileDocument } from '../profile/entities/profile.entity';
+import { Response } from 'express';
 
 type UserInfoType = {
   sub: string;
@@ -226,15 +227,21 @@ export class AuthService {
     }
   }
 
-  async loginVisitor(email: string): Promise<AuthResponse> {
+  async loginVisitor(email: string, response: Response): Promise<boolean> {
     try {
       const payload = this.commonService.getVisitorTokenPayload(email);
       const accessToken = await this.jwtService.signAsync(payload);
+      const expires = new Date();
+      expires.setSeconds(
+        expires.getSeconds() + this.configService.get('JWT_TTL_SEC'),
+      );
 
-      return {
-        statusCode: HttpStatus.OK,
-        accessToken,
-      };
+      response.cookie('Authentication', accessToken, {
+        httpOnly: true,
+        expires,
+      });
+
+      return true;
     } catch (err) {
       this.logger.error('auth.service.loginVisitor', err);
       throw new InternalServerErrorException({
