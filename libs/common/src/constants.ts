@@ -8,3 +8,9 @@ export const DISCOUNT_TYPES = {
   percentage: 'Percentage',
   fixed: 'Fixed',
 };
+
+export const USER_TYPES = {
+  admin: 'Admin',
+  customer: 'Customer',
+  visitor: 'Visitor',
+};

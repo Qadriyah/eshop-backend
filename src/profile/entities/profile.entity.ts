@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { User } from '../../users/entities/user.entity';
 
 export type ProfileDocument = HydratedDocument<Profile>;
@@ -18,7 +18,7 @@ export type ProfileDocument = HydratedDocument<Profile>;
 })
 export class Profile {
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: SchemaTypes.ObjectId,
     ref: 'User',
   })
   user: User;
