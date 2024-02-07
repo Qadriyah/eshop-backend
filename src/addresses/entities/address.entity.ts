@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { User } from '../../users/entities/user.entity';
+import { ADDRESS_TYPES } from '@app/common/constants';
 
-export type ProfileDocument = HydratedDocument<Profile>;
+export type AddressDocument = HydratedDocument<Address>;
 
 @Schema({
   timestamps: true,
@@ -16,22 +17,30 @@ export type ProfileDocument = HydratedDocument<Profile>;
     },
   },
 })
-export class Profile {
+export class Address {
   @Prop({
+    required: true,
     type: SchemaTypes.ObjectId,
     ref: 'User',
   })
   user: User;
 
-  @Prop()
-  firstName: string;
+  @Prop({ required: true })
+  address: string;
 
-  @Prop()
-  lastName: string;
+  @Prop({ required: true })
+  city: string;
+
+  @Prop({ required: true })
+  state: string;
+
+  @Prop({ required: true })
+  zipcode: string;
+
+  @Prop({
+    default: ADDRESS_TYPES.shipping,
+  })
+  type: string;
 }
 
-export const ProfileSchema = SchemaFactory.createForClass(Profile);
-
-ProfileSchema.virtual('fullName').get(function () {
-  return `${this.lastName || ''} ${this.firstName || ''}`;
-});
+export const AddressSchema = SchemaFactory.createForClass(Address);

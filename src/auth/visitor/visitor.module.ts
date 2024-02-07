@@ -4,6 +4,6 @@ import * as cookieParser from 'cookie-parser';
 @Module({})
 export class VisitorModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(cookieParser()).forRoutes(...['/visitor/checkout']);
+    consumer.apply(cookieParser()).forRoutes('*');
   }
 }

@@ -55,10 +55,7 @@ export class UsersService {
     } catch (err) {
       this.logger.error('user.service.create', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

@@ -22,6 +22,7 @@ import { CommonService } from '@app/common';
 import { UserDocument } from '../users/entities/user.entity';
 import { ProfileDocument } from '../profile/entities/profile.entity';
 import { Response } from 'express';
+import { USER_TYPES } from '@app/common/constants';
 
 type UserInfoType = {
   sub: string;
@@ -170,13 +171,14 @@ export class AuthService {
       const hashedPassword = await bcrypt.hash(randtoken.uid(16), 10);
 
       if (!user) {
-        user = (await this.userRepository.create({
+        user = await this.userRepository.create({
           email: userInfo.email,
           password: hashedPassword,
           roles: ['Customer'],
           avator: userInfo.picture,
           refreshToken,
-        } as UserDocument)) as UserDocument;
+        } as UserDocument);
+
         await this.profileRepository.create({
           user: user.id,
           firstName: userInfo.given_name,
@@ -184,7 +186,7 @@ export class AuthService {
         } as ProfileDocument);
       } else {
         await this.userRepository.findOneAndUpdate(
-          { _id: user._id },
+          { _id: user.id },
           {
             refreshToken,
             email: userInfo.email,
@@ -192,13 +194,12 @@ export class AuthService {
           },
         );
         await this.profileRepository.findOneAndUpdate(
-          { user: user._id },
+          { user: user.id },
           {
-            user: user._id,
+            user: user.id,
             firstName: userInfo.given_name,
             lastName: userInfo.family_name,
           },
-          { upsert: true },
         );
       }
 
@@ -227,9 +228,47 @@ export class AuthService {
     }
   }
 
-  async loginVisitor(email: string, response: Response): Promise<boolean> {
+  async userExists(email: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      email,
+      roles: USER_TYPES.customer,
+    });
+    return user !== null;
+  }
+
+  async createGuestAuth(
+    createGuestDto: CreateVisitorAuthDto,
+    response: Response,
+  ): Promise<AuthResponse> {
     try {
-      const payload = this.commonService.getVisitorTokenPayload(email);
+      const refreshToken = randtoken.uid(256);
+      const hashedPassword = await bcrypt.hash(randtoken.uid(16), 10);
+
+      let user = await this.userRepository.findOne({
+        email: createGuestDto.email,
+        roles: 'Guest',
+      });
+      let profile = await this.profileRepository.findOne({ user: user?.id });
+
+      if (!user) {
+        user = await this.userRepository.create({
+          email: createGuestDto.email,
+          password: hashedPassword,
+          roles: ['Guest'],
+          refreshToken,
+        } as UserDocument);
+
+        profile = await this.profileRepository.create({
+          user: user.id,
+          firstName: createGuestDto.firstName,
+          lastName: createGuestDto.lastName,
+        } as ProfileDocument);
+      }
+
+      const payload = this.commonService.getTokenPayload({
+        id: user.id,
+        roles: user.roles,
+      });
       const accessToken = await this.jwtService.signAsync(payload);
       const expires = new Date();
       expires.setSeconds(
@@ -241,7 +280,15 @@ export class AuthService {
         expires,
       });
 
-      return true;
+      return {
+        statusCode: HttpStatus.OK,
+        profile,
+        user: {
+          id: user.id,
+          email: user.email,
+          refreshToken: user.refreshToken,
+        } as UserDocument,
+      };
     } catch (err) {
       this.logger.error('auth.service.loginVisitor', err);
       throw new InternalServerErrorException({

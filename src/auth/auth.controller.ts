@@ -27,15 +27,33 @@ export class AuthController {
     return await this.authService.create(createAuthDto);
   }
 
-  @Post('visitor')
-  async loginVisitor(
+  @Post('guest')
+  async loginGuest(
     @Body(VisitorAuthPipe) creadteAuthDto: CreateVisitorAuthDto,
     @Res() response: Response,
   ): Promise<AuthResponse> {
-    await this.authService.loginVisitor(creadteAuthDto.email, response);
+    const { user, profile } = await this.authService.createGuestAuth(
+      creadteAuthDto,
+      response,
+    );
     return response.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       message: 'Success',
+      user,
+      profile,
+    });
+  }
+
+  @Post('exists')
+  async userExistance(
+    @Body(VisitorAuthPipe) creadteAuthDto: CreateVisitorAuthDto,
+    @Res() response: Response,
+  ): Promise<AuthResponse> {
+    const exists = await this.authService.userExists(creadteAuthDto.email);
+    return response.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      exists,
     });
   }
 

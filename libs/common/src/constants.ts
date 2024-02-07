@@ -8,3 +8,14 @@ export const DISCOUNT_TYPES = {
   percentage: 'Percentage',
   fixed: 'Fixed',
 };
+
+export const USER_TYPES = {
+  admin: 'Admin',
+  customer: 'Customer',
+  visitor: 'Visitor',
+};
+
+export const ADDRESS_TYPES = {
+  shipping: 'Shipping',
+  billing: 'Billing',
+};
