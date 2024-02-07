@@ -61,4 +61,12 @@ export abstract class AbstractRepository<TDocument> {
 
     return document;
   }
+
+  deleteOne(filterQuery: FilterQuery<TDocument>, options?: QueryOptions) {
+    const document = this.model.deleteOne(filterQuery, {
+      ...options,
+    });
+
+    return document;
+  }
 }

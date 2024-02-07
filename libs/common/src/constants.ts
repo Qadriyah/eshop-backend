@@ -14,3 +14,8 @@ export const USER_TYPES = {
   customer: 'Customer',
   visitor: 'Visitor',
 };
+
+export const ADDRESS_TYPES = {
+  shipping: 'Shipping',
+  billing: 'Billing',
+};
