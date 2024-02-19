@@ -39,6 +39,7 @@
     "rand-token": "^1.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
+    "stripe": "^14.15.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {

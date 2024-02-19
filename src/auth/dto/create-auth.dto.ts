@@ -8,8 +8,6 @@ export class CreateAuthDto {
 }
 export class CreateVisitorAuthDto {
   email: string;
-  firstName: string;
-  lastName: string;
 }
 
 export const CreateAuthSchema = Joi.object({
@@ -21,8 +19,6 @@ export const CreateAuthSchema = Joi.object({
 
 export const CreateVisitorAuthSchema = Joi.object({
   email: Joi.string().email().required(),
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
 }).options({
   abortEarly: false,
 });

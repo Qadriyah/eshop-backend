@@ -28,6 +28,9 @@ export class Profile {
 
   @Prop()
   lastName: string;
+
+  @Prop()
+  phone: string;
 }
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);
