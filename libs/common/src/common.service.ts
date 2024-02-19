@@ -9,6 +9,7 @@ type FieldError = {
 
 type Payload = {
   id: Types.ObjectId;
+  email: string;
   roles: string[];
 };
 
@@ -41,6 +42,7 @@ export class CommonService {
   getTokenPayload(user: Payload): Payload {
     return {
       id: user.id,
+      email: user.email,
       roles: user.roles,
     };
   }

@@ -6,17 +6,19 @@ export class CreateProfileDto {
   user: mongoose.Schema.Types.ObjectId;
   firstName?: string;
   lastName?: string;
+  phone?: string;
 }
 
 export const CreateProfileSchema = Joi.object({
   user: Joi.string().email(),
   firstName: Joi.string(),
   lastName: Joi.string(),
+  phone: Joi.string(),
 }).options({
   abortEarly: false,
 });
 
-export class UserResponse {
+export class ProfileResponse {
   statusCode: number;
   message?: string;
   profile?: ProfileDocument;

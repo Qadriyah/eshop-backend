@@ -70,7 +70,7 @@ export class ProfileService {
         ?.populate([
           {
             path: 'user',
-            select: 'email avator',
+            select: 'email avator roles',
           },
         ]);
       return profile;

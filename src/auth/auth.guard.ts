@@ -7,7 +7,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
 import * as randtoken from 'rand-token';
 import { CommonService } from '@app/common';
 import { ConfigService } from '@nestjs/config';
@@ -24,8 +23,40 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = this.extractTokenFromHeader(context);
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+      return await this.setAuthUser(payload.id, context);
+    } catch (err) {
+      this.logger.error('AuthGuard.canActivate', err);
+      if (err.name === 'TokenExpiredError') {
+        const refreshToken = this.extractRefreshTokenFromHeader(context);
+        return await this.refreshToken(refreshToken, context);
+      }
+      const response = context.switchToHttp().getResponse();
+      response.set('Access-Control-Expose-Headers', 'x-refresh-token');
+      response.set('x-refresh-token', '');
+      response.cookie('authentication', '', {
+        httpOnly: true,
+      });
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: [
+          {
+            field: '',
+            message: 'Token is missing in the request',
+          },
+        ],
+      });
+    }
+  }
+
+  private extractTokenFromHeader(
+    context: ExecutionContext,
+  ): string | undefined {
+    const token = context.switchToHttp().getRequest().cookies?.authentication;
     if (!token) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
@@ -37,30 +68,16 @@ export class AuthGuard implements CanActivate {
         ],
       });
     }
+    return token;
+  }
 
-    try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get('JWT_SECRET'),
-      });
-
-      return await this.setAuthUser(payload.id, context);
-    } catch (err) {
-      this.logger.error('AuthGuard.canActivate', err);
-      if (err.name === 'TokenExpiredError') {
-        const refreshToken = this.extractRefreshTokenFromHeader(request);
-        if (!refreshToken) {
-          throw new UnauthorizedException({
-            statusCode: HttpStatus.UNAUTHORIZED,
-            message: [
-              {
-                field: '',
-                message: 'Token is missing in the request',
-              },
-            ],
-          });
-        }
-        return await this.refreshToken(refreshToken, context);
-      }
+  private extractRefreshTokenFromHeader(
+    context: ExecutionContext,
+  ): string | undefined {
+    const token = context.switchToHttp().getRequest().headers?.[
+      'x-refresh-token'
+    ];
+    if (!token) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         message: [
@@ -71,15 +88,7 @@ export class AuthGuard implements CanActivate {
         ],
       });
     }
-  }
-
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
-  }
-
-  private extractRefreshTokenFromHeader(request: Request): string | undefined {
-    return request.headers['x-refresh-token'] as string;
+    return token;
   }
 
   private async refreshToken(
@@ -94,6 +103,11 @@ export class AuthGuard implements CanActivate {
     });
 
     if (!user) {
+      response.set('Access-Control-Expose-Headers', 'x-refresh-token');
+      response.set('x-refresh-token', '');
+      response.cookie('authentication', '', {
+        httpOnly: true,
+      });
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         message: [
@@ -106,6 +120,7 @@ export class AuthGuard implements CanActivate {
     }
     const payload = this.commonService.getTokenPayload({
       id: user.id,
+      email: user.email,
       roles: user.roles,
     });
     const accessToken = await this.jwtService.signAsync(payload);
@@ -117,12 +132,11 @@ export class AuthGuard implements CanActivate {
     );
 
     request.user = user;
-    response.set(
-      'Access-Control-Expose-Headers',
-      'x-access-token, x-refresh-token',
-    );
-    response.set('x-access-token', accessToken);
+    response.set('Access-Control-Expose-Headers', 'x-refresh-token');
     response.set('x-refresh-token', rToken);
+    response.cookie('authentication', accessToken, {
+      httpOnly: true,
+    });
     return true;
   }
 
@@ -131,12 +145,18 @@ export class AuthGuard implements CanActivate {
     context: ExecutionContext,
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+    const response = context.switchToHttp().getResponse();
     const user = await this.userRepository.findOne({
       _id: userId,
       deleted: false,
     });
 
     if (!user) {
+      response.set('Access-Control-Expose-Headers', 'x-refresh-token');
+      response.set('x-refresh-token', '');
+      response.cookie('authentication', '', {
+        httpOnly: true,
+      });
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         message: [

@@ -17,7 +17,9 @@ import { VisitorModule } from './visitor/visitor.module';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET as string,
-      signOptions: { expiresIn: process.env.JWT_TTL as string },
+      signOptions: {
+        expiresIn: process.env.JWT_TTL as string,
+      },
     }),
     VisitorModule,
   ],

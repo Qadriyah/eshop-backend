@@ -23,8 +23,14 @@ export class AuthController {
   @Post('login')
   async create(
     @Body(AuthPipe) createAuthDto: CreateAuthDto,
+    @Res() response: Response,
   ): Promise<AuthResponse> {
-    return await this.authService.create(createAuthDto);
+    const { user } = await this.authService.create(createAuthDto, response);
+    return response.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      user,
+    });
   }
 
   @Post('guest')
@@ -44,19 +50,6 @@ export class AuthController {
     });
   }
 
-  @Post('exists')
-  async userExistance(
-    @Body(VisitorAuthPipe) creadteAuthDto: CreateVisitorAuthDto,
-    @Res() response: Response,
-  ): Promise<AuthResponse> {
-    const exists = await this.authService.userExists(creadteAuthDto.email);
-    return response.status(HttpStatus.OK).json({
-      statusCode: HttpStatus.OK,
-      message: 'Success',
-      exists,
-    });
-  }
-
   @Post('google-auth-url')
   async getAuthUrl(@Res() response: Response) {
     response.header('Access-Control-Allow-Origin', '*');
@@ -68,8 +61,19 @@ export class AuthController {
   }
 
   @Get('google-auth')
-  async getAuth(@Req() request: Request): Promise<AuthResponse> {
+  async getAuth(
+    @Req() request: Request,
+    @Res() response: Response,
+  ): Promise<AuthResponse> {
     const { code } = request.query;
-    return await this.authService.getGoogleAuth(code as string);
+    const { user } = await this.authService.getGoogleAuth(
+      code as string,
+      response,
+    );
+    return response.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      user,
+    });
   }
 }

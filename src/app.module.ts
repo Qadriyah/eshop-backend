@@ -13,6 +13,7 @@ import { ProductModule } from './product/product.module';
 import { SalesModule } from './sales/sales.module';
 import { CustomersModule } from './customers/customers.module';
 import { AddressesModule } from './addresses/addresses.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AddressesModule } from './addresses/addresses.module';
         JWT_TTL: Joi.string().required(),
         JWT_TTL_SEC: Joi.number().required(),
         PORT: Joi.number().required(),
+        STRIPE_SECRET_KEY: Joi.string().required(),
       }),
       // envFilePath: `./config/${process.env.NODE_ENV}.env`,
     }),
@@ -40,6 +42,7 @@ import { AddressesModule } from './addresses/addresses.module';
     SalesModule,
     CustomersModule,
     AddressesModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
