@@ -3,17 +3,22 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { PRODUCT_STATUS } from '@app/common/constants';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductRepository } from './product.repository';
 import { ProductDocument } from './entities/product.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ProductService {
   private readonly logger = new Logger(ProductService.name);
-  constructor(private readonly productRepo: ProductRepository) {}
+  constructor(
+    private readonly productRepo: ProductRepository,
+    private readonly configService: ConfigService,
+  ) {}
 
   async create(createProductDto: CreateProductDto): Promise<ProductDocument> {
     try {
@@ -126,6 +131,80 @@ export class ProductService {
       return product;
     } catch (err) {
       this.logger.error('product.service.remove', err);
+      if (err.status !== 500) {
+        return {
+          statusCode: err.status,
+          ...err.response,
+        };
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: [
+          {
+            field: 'name',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async uploadImage(filename: string, productId: string) {
+    try {
+      const product = await this.productRepo.findOne({ _id: productId });
+      if (!product) {
+        throw new NotFoundException({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: [
+            {
+              field: 'name',
+              message: 'Product not found',
+            },
+          ],
+        });
+      }
+      const imageLocation = `${this.configService.get(
+        'BASE_URL',
+      )}/products/download/${filename}`;
+
+      await this.productRepo.findOneAndUpdate(
+        { _id: productId },
+        { images: [...product.images, imageLocation] },
+      );
+      return filename;
+    } catch (err) {
+      this.logger.error('product.service.uploadImage', err);
+      if (err.status !== 500) {
+        return {
+          statusCode: err.status,
+          ...err.response,
+        };
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: [
+          {
+            field: 'name',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async downloadImage() {
+    try {
+      const options = {
+        root: `${__dirname}/../uploads`,
+        dotfiles: 'deny',
+        headers: {
+          'x-timestamp': Date.now(),
+          'x-sent': true,
+        },
+      };
+      return options;
+    } catch (err) {
+      this.logger.error('product.service.downloadImage', err);
       if (err.status !== 500) {
         return {
           statusCode: err.status,

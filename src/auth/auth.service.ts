@@ -250,7 +250,6 @@ export class AuthService {
 
   async createGuestAuth(
     createGuestDto: CreateVisitorAuthDto,
-    response: Response,
   ): Promise<AuthResponse> {
     try {
       const hashedPassword = await bcrypt.hash(randtoken.uid(16), 10);
@@ -277,13 +276,11 @@ export class AuthService {
         roles: user.roles,
       });
       const accessToken = await this.jwtService.signAsync(payload);
-      response.cookie('authentication', accessToken, {
-        httpOnly: true,
-      });
 
       return {
         statusCode: HttpStatus.OK,
         profile,
+        accessToken,
         user: {
           id: user.id,
           email: user.email,

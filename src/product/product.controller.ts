@@ -8,15 +8,21 @@ import {
   Delete,
   UseGuards,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
+  Res,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ProductService } from './product.service';
 import { CreateProductDto, ProductResponse } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import {
   CreateProductValidationPipe,
+  ImageTransformPipe,
   UpdateProductValidationPipe,
 } from './product.pipe';
+import { Response } from 'express';
 
 @Controller('products')
 export class ProductController {
@@ -83,5 +89,26 @@ export class ProductController {
       message: 'Product has been removed successfully',
       product,
     };
+  }
+
+  @Post('upload/:productId')
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadFile(
+    @Param('productId') productId: string,
+    @UploadedFile(ImageTransformPipe) filename: string,
+  ) {
+    await this.productService.uploadImage(filename, productId);
+    return {
+      filename,
+    };
+  }
+
+  @Get('download/:filename')
+  async downloadImage(
+    @Param('filename') filename: string,
+    @Res() response: Response,
+  ) {
+    const fileOptions = await this.productService.downloadImage();
+    response.sendFile(filename, fileOptions);
   }
 }

@@ -22,6 +22,10 @@ export class CreateProductDto {
   height?: number;
 }
 
+export class ImageUploadDto {
+  name: string;
+}
+
 export const CreateProductSchema = Joi.object({
   sku: Joi.string(),
   name: Joi.string().required(),

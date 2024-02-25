@@ -108,25 +108,26 @@ export class AddressesService {
   }
 
   async remove(addressId: string): Promise<any> {
-    try {
-      const address = await this.addressRepository.deleteOne({
-        _id: addressId,
-      });
-      return address;
-    } catch (err) {
-      this.logger.error('address.service.remove', err);
-      if (err.status !== 500) {
-        throw err;
-      }
-      throw new InternalServerErrorException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
-          {
-            field: 'email',
-            message: 'Something went wrong',
-          },
-        ],
-      });
-    }
+    // try {
+    //   const address = await this.addressRepository.deleteOne({
+    //     _id: addressId,
+    //   });
+    //   return address;
+    // } catch (err) {
+    //   this.logger.error('address.service.remove', err);
+    //   if (err.status !== 500) {
+    //     throw err;
+    //   }
+    //   throw new InternalServerErrorException({
+    //     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+    //     message: [
+    //       {
+    //         field: 'email',
+    //         message: 'Something went wrong',
+    //       },
+    //     ],
+    //   });
+    // }
+    return addressId;
   }
 }
