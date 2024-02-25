@@ -67,6 +67,17 @@ export class Product {
 
   @Prop()
   height: number;
+
+  @Prop()
+  slug: string;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
+
+ProductSchema.pre('save', function () {
+  this.slug = slugify(this.name);
+});
+
+const slugify = (title: string) => {
+  return title.toLowerCase().split(' ').join('-');
+};

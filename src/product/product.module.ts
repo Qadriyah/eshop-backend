@@ -12,14 +12,20 @@ import { CommonService } from '@app/common';
   controllers: [ProductController],
   providers: [ProductService, CommonService, UserRepository, ProductRepository],
   imports: [
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: Product.name,
-        schema: ProductSchema,
+        useFactory: () => {
+          const schema = ProductSchema;
+          return schema;
+        },
       },
       {
         name: User.name,
-        schema: UserSchema,
+        useFactory: () => {
+          const schema = UserSchema;
+          return schema;
+        },
       },
     ]),
   ],

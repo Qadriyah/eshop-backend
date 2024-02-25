@@ -53,4 +53,8 @@ export class CommonService {
       roles: ['Visitor'],
     };
   }
+
+  slugify(title: string): string {
+    return title.toLowerCase().split(' ').join('-');
+  }
 }

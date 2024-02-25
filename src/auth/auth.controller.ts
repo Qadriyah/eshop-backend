@@ -38,10 +38,11 @@ export class AuthController {
     @Body(VisitorAuthPipe) creadteAuthDto: CreateVisitorAuthDto,
     @Res() response: Response,
   ): Promise<AuthResponse> {
-    const { user, profile } = await this.authService.createGuestAuth(
-      creadteAuthDto,
-      response,
-    );
+    const { user, profile, accessToken } =
+      await this.authService.createGuestAuth(creadteAuthDto);
+    response.cookie('authentication', accessToken, {
+      httpOnly: true,
+    });
     return response.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       message: 'Success',

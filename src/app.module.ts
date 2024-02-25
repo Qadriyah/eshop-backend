@@ -14,6 +14,8 @@ import { SalesModule } from './sales/sales.module';
 import { CustomersModule } from './customers/customers.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { PaymentsModule } from './payments/payments.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 @Module({
   imports: [
@@ -30,8 +32,14 @@ import { PaymentsModule } from './payments/payments.module';
         JWT_TTL_SEC: Joi.number().required(),
         PORT: Joi.number().required(),
         STRIPE_SECRET_KEY: Joi.string().required(),
+        BASE_URL: Joi.string().required(),
       }),
       // envFilePath: `./config/${process.env.NODE_ENV}.env`,
+    }),
+    MulterModule.registerAsync({
+      useFactory: () => ({
+        storage: memoryStorage(),
+      }),
     }),
     CommonModule,
     UsersModule,
