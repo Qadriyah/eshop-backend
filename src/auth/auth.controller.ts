@@ -25,7 +25,16 @@ export class AuthController {
     @Body(AuthPipe) createAuthDto: CreateAuthDto,
     @Res() response: Response,
   ): Promise<AuthResponse> {
-    const { user } = await this.authService.create(createAuthDto, response);
+    const { user, accessToken, refreshToken } = await this.authService.create(
+      createAuthDto,
+      response,
+    );
+    response.cookie('authentication', accessToken, {
+      httpOnly: true,
+    });
+    response.cookie('rtoken', refreshToken, {
+      httpOnly: true,
+    });
     return response.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       message: 'Success',
@@ -67,10 +76,14 @@ export class AuthController {
     @Res() response: Response,
   ): Promise<AuthResponse> {
     const { code } = request.query;
-    const { user } = await this.authService.getGoogleAuth(
-      code as string,
-      response,
-    );
+    const { user, accessToken, refreshToken } =
+      await this.authService.getGoogleAuth(code as string, response);
+    response.cookie('authentication', accessToken, {
+      httpOnly: true,
+    });
+    response.cookie('rtoken', refreshToken, {
+      httpOnly: true,
+    });
     return response.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       message: 'Success',

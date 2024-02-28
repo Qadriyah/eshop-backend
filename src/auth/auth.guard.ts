@@ -36,11 +36,8 @@ export class AuthGuard implements CanActivate {
         return await this.refreshToken(refreshToken, context);
       }
       const response = context.switchToHttp().getResponse();
-      response.set('Access-Control-Expose-Headers', 'x-refresh-token');
-      response.set('x-refresh-token', '');
-      response.cookie('authentication', '', {
-        httpOnly: true,
-      });
+      response.cookie('authentication', '');
+      response.cookie('rtoken', '');
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         message: [
@@ -74,9 +71,7 @@ export class AuthGuard implements CanActivate {
   private extractRefreshTokenFromHeader(
     context: ExecutionContext,
   ): string | undefined {
-    const token = context.switchToHttp().getRequest().headers?.[
-      'x-refresh-token'
-    ];
+    const token = context.switchToHttp().getRequest().cookies?.rtoken;
     if (!token) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
@@ -103,11 +98,8 @@ export class AuthGuard implements CanActivate {
     });
 
     if (!user) {
-      response.set('Access-Control-Expose-Headers', 'x-refresh-token');
-      response.set('x-refresh-token', '');
-      response.cookie('authentication', '', {
-        httpOnly: true,
-      });
+      response.cookie('authentication', '');
+      response.cookie('rtoken', '');
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         message: [
@@ -132,9 +124,10 @@ export class AuthGuard implements CanActivate {
     );
 
     request.user = user;
-    response.set('Access-Control-Expose-Headers', 'x-refresh-token');
-    response.set('x-refresh-token', rToken);
     response.cookie('authentication', accessToken, {
+      httpOnly: true,
+    });
+    response.cookie('rtoken', rToken, {
       httpOnly: true,
     });
     return true;
@@ -152,11 +145,8 @@ export class AuthGuard implements CanActivate {
     });
 
     if (!user) {
-      response.set('Access-Control-Expose-Headers', 'x-refresh-token');
-      response.set('x-refresh-token', '');
-      response.cookie('authentication', '', {
-        httpOnly: true,
-      });
+      response.cookie('authentication', '');
+      response.cookie('rtoken', '');
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         message: [

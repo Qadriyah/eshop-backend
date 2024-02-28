@@ -106,15 +106,12 @@ export class AuthService {
         roles: user.roles,
       });
       const accessToken = await this.jwtService.signAsync(payload);
-      response.set('Access-Control-Expose-Headers', 'x-refresh-token');
-      response.set('x-refresh-token', refreshToken);
-      response.cookie('authentication', accessToken, {
-        httpOnly: true,
-      });
 
       return {
         statusCode: HttpStatus.OK,
         user,
+        accessToken,
+        refreshToken,
       };
     } catch (err) {
       this.logger.error('auth.service.create', err);
@@ -216,15 +213,12 @@ export class AuthService {
         roles: user.roles,
       });
       const accessToken = await this.jwtService.signAsync(payload);
-      response.set('Access-Control-Expose-Headers', 'x-refresh-token');
-      response.set('x-refresh-token', refreshToken);
-      response.cookie('authentication', accessToken, {
-        httpOnly: true,
-      });
 
       return {
         statusCode: HttpStatus.OK,
         user,
+        accessToken,
+        refreshToken,
       };
     } catch (err) {
       this.logger.error('auth.service.getAuth', err);
