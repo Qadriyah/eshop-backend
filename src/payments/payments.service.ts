@@ -98,11 +98,8 @@ export class PaymentsService {
         totalAmount += lineTotal;
       }
       const paymentIntent = await this.stripe.paymentIntents.create({
-        amount: totalAmount,
+        amount: totalAmount * 100,
         currency: 'usd',
-        automatic_payment_methods: {
-          enabled: true,
-        },
         shipping: {
           name: createPaymentDto.name,
           phone: createPaymentDto.phone,
