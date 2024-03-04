@@ -3,64 +3,94 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
   HttpStatus,
   UseGuards,
+  Res,
+  Req,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
-import { CreatePaymentDto, PaymentResponse } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { CheckoutSessionDto, PaymentResponse } from './dto/create-payment.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { CalculateTaxPipe, CreatePaymentsPipe } from './payments.pipe';
+import { CheckoutSessionPipe } from './payments.pipe';
+import { SalesService } from '../sales/sales.service';
+import { Request, Response } from 'express';
+import { CurrentUser } from '../auth/current.user.decorator';
+import { UserDocument } from '../users/entities/user.entity';
 
-@UseGuards(AuthGuard)
 @Controller('payments')
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly orderService: SalesService,
+  ) {}
 
-  @Post('intent')
-  async create(
-    @Body(CreatePaymentsPipe) createPaymentDto: CreatePaymentDto,
+  @UseGuards(AuthGuard)
+  @Post('checkout/session')
+  async checkoutSession(
+    @Body(CheckoutSessionPipe) checkoutSessionDto: CheckoutSessionDto,
+    @CurrentUser() user: UserDocument,
   ): Promise<PaymentResponse> {
-    const secret = await this.paymentsService.createPaymentIntent(
-      createPaymentDto,
+    const session = await this.paymentsService.createCheckoutSession(
+      checkoutSessionDto,
+      user,
     );
     return {
       statusCode: HttpStatus.OK,
-      clientSecret: secret,
+      session,
     };
   }
 
-  @Post('tax')
-  async calculateTax(
-    @Body(CalculateTaxPipe) createPaymentDto: CreatePaymentDto,
+  @UseGuards(AuthGuard)
+  @Get('checkout/session/:id')
+  async getCheckoutSession(
+    @Param('id') sessionId: string,
   ): Promise<PaymentResponse> {
-    const tax = await this.paymentsService.calculateTax(createPaymentDto);
+    const session = await this.paymentsService.getCheckoutSession(sessionId);
     return {
       statusCode: HttpStatus.OK,
-      salesTax: tax,
+      session,
     };
   }
 
-  @Get()
-  findAll() {
-    return this.paymentsService.findAll();
+  @UseGuards(AuthGuard)
+  @Get('checkout/session/:id/line-items')
+  async getLineItems(@Param('id') sessionId: string): Promise<PaymentResponse> {
+    const lineItems = await this.paymentsService.getLineItems(sessionId);
+    return {
+      statusCode: HttpStatus.OK,
+      lineItems,
+    };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.paymentsService.findOne(+id);
+  @Post('webhook')
+  async webHook(
+    @Req() request: Request,
+    @Res() response: Response,
+  ): Promise<PaymentResponse> {
+    await this.paymentsService.createWebhook(request, response);
+    return {
+      statusCode: HttpStatus.OK,
+    };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-    return this.paymentsService.update(+id, updatePaymentDto);
+  @UseGuards(AuthGuard)
+  @Get('session')
+  async findAll(): Promise<PaymentResponse> {
+    const sessions = await this.paymentsService.findAll();
+    return {
+      statusCode: HttpStatus.OK,
+      sessions,
+    };
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paymentsService.remove(+id);
+  @UseGuards(AuthGuard)
+  @Get('intent/:id')
+  async findOne(@Param('id') id: string): Promise<PaymentResponse> {
+    const paymentIntent = await this.paymentsService.findOne(id);
+    return {
+      statusCode: HttpStatus.OK,
+      payment: paymentIntent,
+    };
   }
 }

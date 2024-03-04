@@ -33,6 +33,8 @@ import { memoryStorage } from 'multer';
         PORT: Joi.number().required(),
         STRIPE_SECRET_KEY: Joi.string().required(),
         BASE_URL: Joi.string().required(),
+        REDIRECT_FRONTEND_URL: Joi.string().required(),
+        STRIPE_WEBHOOK_TOKEN: Joi.string().required(),
       }),
       // envFilePath: `./config/${process.env.NODE_ENV}.env`,
     }),

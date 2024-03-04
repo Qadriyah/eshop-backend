@@ -57,4 +57,11 @@ export class CommonService {
   slugify(title: string): string {
     return title.toLowerCase().split(' ').join('-');
   }
+
+  getShippingRate(method: string) {
+    const rates = {
+      flatRate: 27.6,
+    };
+    return rates[method];
+  }
 }

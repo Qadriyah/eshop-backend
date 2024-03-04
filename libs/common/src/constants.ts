@@ -19,3 +19,19 @@ export const ADDRESS_TYPES = {
   shipping: 'Shipping',
   billing: 'Billing',
 };
+
+export const SHIPPING_METHODS = {
+  flatRate: 'Flat Rate Shipping',
+  retailRate: 'Retail Rate Shipping',
+  dailyRate: 'Daily Rate Shipping',
+};
+
+export const SALE_STATUS = {
+  pending: 'Pending',
+  processing: 'Processing',
+  completed: 'Completed',
+  delivering: 'Delivering',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+  refunded: 'Refunded',
+};
