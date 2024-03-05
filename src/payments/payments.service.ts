@@ -5,15 +5,15 @@ import {
   Logger,
 } from '@nestjs/common';
 import Stripe from 'stripe';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { Request, Response } from 'express';
+import { CheckoutSessionDto } from './dto/create-payment.dto';
 import { ConfigService } from '@nestjs/config';
 import { ProductRepository } from '../product/product.repository';
-
-type LineItem = {
-  amount: number;
-  reference: string;
-};
+import { CommonService } from '@app/common';
+import { SalesService } from '../sales/sales.service';
+import { UserDocument } from '../users/entities/user.entity';
+import { SALE_STATUS } from '@app/common/constants';
+import { SaleStatusType } from 'src/sales/entities/sale.entity';
 
 @Injectable()
 export class PaymentsService {
@@ -21,46 +21,242 @@ export class PaymentsService {
   private readonly stripe: Stripe;
 
   constructor(
-    configService: ConfigService,
+    private readonly configService: ConfigService,
     private readonly productRepository: ProductRepository,
+    private readonly commonService: CommonService,
+    private readonly orderService: SalesService,
   ) {
     this.stripe = new Stripe(configService.get('STRIPE_SECRET_KEY'));
   }
 
-  async calculateTax(createPaymentDto: CreatePaymentDto): Promise<any> {
+  async createCheckoutSession(
+    checkoutSessionDto: CheckoutSessionDto,
+    user: UserDocument,
+  ): Promise<Stripe.Checkout.Session> {
     try {
-      const lineItems: LineItem[] = [];
-      const temp = Object.assign(
-        {},
-        ...createPaymentDto.lineItems.map((item) => ({
-          [item.product]: {
-            ...item,
+      const lineItems = [];
+      const domain = this.configService.get('REDIRECT_FRONTEND_URL');
+      for (const item of checkoutSessionDto.lineItems) {
+        const product = await this.productRepository.findOne({ _id: item.id });
+        if (product) {
+          lineItems.push({
+            price_data: {
+              currency: 'usd',
+              unit_amount: product.price * 100,
+              product_data: {
+                name: product.name,
+                description: product.description,
+                images: [product.icon],
+              },
+            },
+            quantity: item.quantity,
+          });
+        }
+      }
+      const session = await this.stripe.checkout.sessions.create({
+        mode: 'payment',
+        success_url: `${domain}/checkout/success?success=true`,
+        cancel_url: `${domain}/continue-to-checkout`,
+        automatic_tax: { enabled: true },
+        line_items: lineItems,
+        shipping_address_collection: {
+          allowed_countries: ['US'],
+        },
+        shipping_options: [
+          {
+            shipping_rate_data: {
+              type: 'fixed_amount',
+              fixed_amount: {
+                amount: 1500,
+                currency: 'usd',
+              },
+              display_name: 'Next day air',
+              delivery_estimate: {
+                minimum: {
+                  unit: 'business_day',
+                  value: 1,
+                },
+                maximum: {
+                  unit: 'business_day',
+                  value: 1,
+                },
+              },
+            },
           },
-        })),
-      );
-
-      const products = await this.productRepository.find({
-        _id: { $in: Object.keys(temp) },
+          {
+            shipping_rate: checkoutSessionDto.shippingRate,
+          },
+        ],
+        customer_email: checkoutSessionDto.email,
       });
-      for (const product of products) {
-        const lineTotal = product.price * temp[product.id].quantity;
-        lineItems.push({
-          amount: lineTotal,
-          reference: product.id,
+
+      await this.orderService.create({
+        user: user.id,
+        session: session.id,
+        lineItems: lineItems.map((item) => ({
+          name: item.price_data.product_data.name,
+          price: item.price_data.unit_amount / 100,
+          quantity: item.quantity,
+          icon: item.price_data.product_data.images[0],
+        })),
+      });
+
+      return session;
+    } catch (err) {
+      this.logger.error('payments.service.checkoutSession', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: [
+          {
+            field: 'payment',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async createWebhook(request: Request, response: Response) {
+    let event: Stripe.Event;
+    const sig = request.headers['stripe-signature'];
+    const payload = request.rawBody;
+    const endpointSecret = this.configService.get('STRIPE_WEBHOOK_TOKEN');
+
+    try {
+      event = this.stripe.webhooks.constructEvent(payload, sig, endpointSecret);
+      // Handle the event
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          const paymentIntentSucceeded = event.data.object;
+          break;
+        case 'checkout.session.completed':
+          const checkouSessionSucceeded = event.data.object;
+          this.updateSaleStatus(checkouSessionSucceeded);
+          break;
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+    } catch (err) {
+      response.status(400).send(`Webhook Error: ${err.message}`);
+      return;
+    }
+  }
+
+  async getCheckoutSession(id: string): Promise<Stripe.Checkout.Session> {
+    try {
+      const session = await this.stripe.checkout.sessions.retrieve(id);
+      return session;
+    } catch (err) {
+      this.logger.error('payments.service.getCheckoutSession', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: [
+          {
+            field: 'payment',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async getLineItems(
+    sessionId: string,
+  ): Promise<Stripe.Response<Stripe.ApiList<Stripe.LineItem>>> {
+    try {
+      const lineItems = await this.stripe.checkout.sessions.listLineItems(
+        sessionId,
+      );
+      return lineItems;
+    } catch (err) {
+      this.logger.error('payments.service.getLineItems', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: [
+          {
+            field: 'payment',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async findAll(): Promise<
+    Stripe.Response<Stripe.ApiList<Stripe.Checkout.Session>>
+  > {
+    try {
+      const sessions = await this.stripe.checkout.sessions.list();
+      return sessions;
+    } catch (err) {
+      this.logger.error('payments.service.findAll', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: [
+          {
+            field: 'payment',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async findOne(id: string): Promise<Stripe.PaymentIntent> {
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.retrieve(id);
+      return paymentIntent;
+    } catch (err) {
+      this.logger.error('payments.service.findOne', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: [
+          {
+            field: 'payment',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  private async updateSaleStatus(
+    session: Stripe.Checkout.Session,
+  ): Promise<void> {
+    try {
+      const order = await this.orderService.findBySession(session.id);
+      if (!order) {
+        throw new InternalServerErrorException({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: [
+            {
+              field: 'order',
+              message: 'Order was not found',
+            },
+          ],
         });
       }
-      // const products = await this.stripe.products.list();
-      const calculation = await this.stripe.tax.calculations.create({
-        currency: 'usd',
-        line_items: lineItems,
-        customer_details: {
-          address: createPaymentDto.address,
-          address_source: 'shipping',
-        },
+
+      await this.orderService.update(order.id, {
+        status: SALE_STATUS.completed as SaleStatusType,
       });
-      return calculation;
     } catch (err) {
-      this.logger.error('payments.service.calculateTax', err);
+      this.logger.error('payments.service.updateSaleStatus', err);
       if (err.status !== 500) {
         throw err;
       }
@@ -68,76 +264,11 @@ export class PaymentsService {
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: [
           {
-            field: 'order',
+            field: 'payment',
             message: 'Something went wrong',
           },
         ],
       });
     }
-  }
-
-  async createPaymentIntent(
-    createPaymentDto: CreatePaymentDto,
-  ): Promise<string> {
-    try {
-      let totalAmount = 0;
-      const temp = Object.assign(
-        {},
-        ...createPaymentDto.lineItems.map((item) => ({
-          [item.product]: {
-            ...item,
-          },
-        })),
-      );
-
-      const products = await this.productRepository.find({
-        _id: { $in: Object.keys(temp) },
-      });
-      for (const product of products) {
-        const lineTotal = product.price * temp[product.id].quantity;
-        totalAmount += lineTotal;
-      }
-      const paymentIntent = await this.stripe.paymentIntents.create({
-        amount: totalAmount * 100,
-        currency: 'usd',
-        shipping: {
-          name: createPaymentDto.name,
-          phone: createPaymentDto.phone,
-          carrier: createPaymentDto.carrier,
-          address: createPaymentDto.address,
-        },
-      });
-      return paymentIntent.client_secret;
-    } catch (err) {
-      this.logger.error('payments.service.createPaymentIntent', err);
-      if (err.status !== 500) {
-        throw err;
-      }
-      throw new InternalServerErrorException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
-          {
-            field: 'order',
-            message: 'Something went wrong',
-          },
-        ],
-      });
-    }
-  }
-
-  findAll() {
-    return `This action returns all payments`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} payment`;
-  }
-
-  update(id: number, updatePaymentDto: UpdatePaymentDto) {
-    return `This action updates a #${id} payment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} payment`;
   }
 }

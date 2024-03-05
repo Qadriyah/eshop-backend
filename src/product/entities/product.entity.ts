@@ -48,9 +48,6 @@ export class Product {
   fixedDiscount: number;
 
   @Prop()
-  quantity: number;
-
-  @Prop()
   stock: number;
 
   @Prop({ default: true })

@@ -1,7 +1,8 @@
 import * as Joi from 'joi';
+import Stripe from 'stripe';
 
 export type OrderItem = {
-  product: string;
+  id: string;
   quantity: number;
 };
 
@@ -15,32 +16,45 @@ export type AddressType = {
 
 export class CreatePaymentDto {
   lineItems: OrderItem[];
-  address: AddressType;
+  address?: AddressType;
   salesTax?: number;
   name?: string;
   carrier?: string;
   phone?: string;
+  taxId?: string;
 }
+
+export class CheckoutSessionDto {
+  email: string;
+  shippingRate: string;
+  lineItems: OrderItem[];
+}
+
+export const CheckoutSessionValidation = Joi.object({
+  email: Joi.string().email().required(),
+  shippingRate: Joi.string().required(),
+  lineItems: Joi.array()
+    .items(
+      Joi.object({
+        id: Joi.string().required(),
+        quantity: Joi.number().required(),
+      }),
+    )
+    .required(),
+}).options({
+  abortEarly: false,
+});
 
 export const CreatePaymentValidation = Joi.object({
   lineItems: Joi.array()
     .items(
       Joi.object({
-        product: Joi.string().required(),
+        id: Joi.string().required(),
         quantity: Joi.number().required(),
       }),
     )
     .required(),
-  address: Joi.object({
-    line1: Joi.string().required(),
-    city: Joi.string().required(),
-    state: Joi.string().required(),
-    postal_code: Joi.string().required(),
-    country: Joi.string().required(),
-  }).required(),
-  name: Joi.string().required(),
-  phone: Joi.string().required(),
-  carrier: Joi.string(),
+  taxId: Joi.string(),
 }).options({
   abortEarly: false,
 });
@@ -49,7 +63,7 @@ export const CalculateSalesTaxValidation = Joi.object({
   lineItems: Joi.array()
     .items(
       Joi.object({
-        product: Joi.string().required(),
+        id: Joi.string().required(),
         quantity: Joi.number().required(),
       }),
     )
@@ -61,9 +75,6 @@ export const CalculateSalesTaxValidation = Joi.object({
     postal_code: Joi.string().required(),
     country: Joi.string().required(),
   }).required(),
-  name: Joi.string().required(),
-  phone: Joi.string().required(),
-  carrier: Joi.string(),
 }).options({
   abortEarly: false,
 });
@@ -71,5 +82,10 @@ export const CalculateSalesTaxValidation = Joi.object({
 export class PaymentResponse {
   statusCode: number;
   clientSecret?: string;
+  id?: string;
   salesTax?: number;
+  payment?: Stripe.PaymentIntent;
+  session?: Stripe.Checkout.Session;
+  sessions?: Stripe.Response<Stripe.ApiList<Stripe.Checkout.Session>>;
+  lineItems?: Stripe.Response<Stripe.ApiList<Stripe.LineItem>>;
 }
