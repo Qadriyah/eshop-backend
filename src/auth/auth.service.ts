@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpStatus,
   Injectable,
   InternalServerErrorException,
@@ -21,7 +22,7 @@ import { ConfigService } from '@nestjs/config';
 import { CommonService } from '@app/common';
 import { UserDocument } from '../users/entities/user.entity';
 import { ProfileDocument } from '../profile/entities/profile.entity';
-import { Response } from 'express';
+import { USER_TYPES } from '@app/common/constants';
 
 type UserInfoType = {
   sub: string;
@@ -53,14 +54,12 @@ export class AuthService {
     );
   }
 
-  async create(
-    createAuthDto: CreateAuthDto,
-    response: Response,
-  ): Promise<AuthResponse> {
+  async create(createAuthDto: CreateAuthDto): Promise<AuthResponse> {
     try {
       const user = await this.userRepository
         .findOne({
           email: createAuthDto.email,
+          $or: [{ roles: USER_TYPES.customer }, { roles: USER_TYPES.admin }],
           deleted: false,
         })
         ?.select('email password roles');
@@ -68,7 +67,7 @@ export class AuthService {
       if (!user) {
         throw new NotFoundException({
           statusCode: HttpStatus.NOT_FOUND,
-          message: [
+          errors: [
             {
               field: 'email',
               message: 'User does not exist',
@@ -83,9 +82,9 @@ export class AuthService {
       );
 
       if (!isMatch) {
-        throw new UnauthorizedException({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: [
+        throw new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          errors: [
             {
               field: 'email',
               message: 'Invalid email or password',
@@ -116,14 +115,11 @@ export class AuthService {
     } catch (err) {
       this.logger.error('auth.service.create', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -146,7 +142,7 @@ export class AuthService {
       this.logger.error('auth.service.getAuthorizedUrl', err);
       throw new InternalServerErrorException({
         statusCode: HttpStatus.BAD_REQUEST,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -156,7 +152,7 @@ export class AuthService {
     }
   }
 
-  async getGoogleAuth(code: string, response: Response): Promise<AuthResponse> {
+  async getGoogleAuth(code: string): Promise<AuthResponse> {
     try {
       const res = await this.oAuth2Client.getToken(code);
       this.oAuth2Client.setCredentials(res.tokens);
@@ -178,7 +174,7 @@ export class AuthService {
         user = await this.userRepository.create({
           email: userInfo.email,
           password: hashedPassword,
-          roles: ['Customer'],
+          roles: [USER_TYPES.customer],
           avator: userInfo.picture,
           refreshToken,
         } as UserDocument);
@@ -189,22 +185,28 @@ export class AuthService {
           lastName: userInfo.family_name,
         } as ProfileDocument);
       } else {
+        const roles = user.roles.includes(USER_TYPES.admin)
+          ? user.roles
+          : [USER_TYPES.customer];
         await this.userRepository.findOneAndUpdate(
           { _id: user.id },
           {
             refreshToken,
+            roles,
             email: userInfo.email,
             avator: userInfo.picture,
           },
         );
-        await this.profileRepository.findOneAndUpdate(
-          { user: user.id },
-          {
-            user: user.id,
-            firstName: userInfo.given_name,
-            lastName: userInfo.family_name,
-          },
-        );
+        const profile = await this.profileRepository.findOne({ user: user.id });
+        if (profile) {
+          await this.profileRepository.findOneAndUpdate(
+            { _id: profile.id },
+            {
+              firstName: userInfo.given_name,
+              lastName: userInfo.family_name,
+            },
+          );
+        }
       }
 
       const payload = this.commonService.getTokenPayload({
@@ -224,7 +226,7 @@ export class AuthService {
       this.logger.error('auth.service.getAuth', err);
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -232,14 +234,6 @@ export class AuthService {
         ],
       });
     }
-  }
-
-  async userExists(email: string): Promise<boolean> {
-    const user = await this.userRepository.findOne({
-      email,
-      // roles: USER_TYPES.customer,
-    });
-    return user !== null;
   }
 
   async createGuestAuth(
@@ -256,7 +250,7 @@ export class AuthService {
         user = await this.userRepository.create({
           email: createGuestDto.email,
           password: hashedPassword,
-          roles: ['Guest'],
+          roles: [USER_TYPES.guest],
         } as UserDocument);
 
         profile = await this.profileRepository.create({
@@ -285,7 +279,7 @@ export class AuthService {
       this.logger.error('auth.service.loginVisitor', err);
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',

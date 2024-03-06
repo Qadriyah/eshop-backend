@@ -1,5 +1,10 @@
 import { CommonService } from '@app/common';
-import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  PipeTransform,
+} from '@nestjs/common';
 import {
   CalculateSalesTaxValidation,
   CheckoutSessionDto,
@@ -30,7 +35,10 @@ export class CalculateTaxPipe implements PipeTransform {
     const { error } = CalculateSalesTaxValidation.validate(value);
     if (error) {
       const errors = this.commonService.formatError(error);
-      throw new BadRequestException(errors);
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        errors,
+      });
     }
     return value;
   }
@@ -44,7 +52,10 @@ export class CheckoutSessionPipe implements PipeTransform {
     const { error } = CheckoutSessionValidation.validate(value);
     if (error) {
       const errors = this.commonService.formatError(error);
-      throw new BadRequestException(errors);
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        errors,
+      });
     }
     return value;
   }

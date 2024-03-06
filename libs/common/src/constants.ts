@@ -12,7 +12,7 @@ export const DISCOUNT_TYPES = {
 export const USER_TYPES = {
   admin: 'Admin',
   customer: 'Customer',
-  visitor: 'Visitor',
+  guest: 'Guest',
 };
 
 export const ADDRESS_TYPES = {

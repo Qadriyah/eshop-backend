@@ -26,7 +26,7 @@ export abstract class AbstractRepository<TDocument> {
       this.logger.warn('Document was not found with filterQuery ', filterQuery);
       throw new NotFoundException({
         statusCode: HttpStatus.NOT_FOUND,
-        message: [
+        errors: [
           {
             field: '',
             message: 'Document was not found',

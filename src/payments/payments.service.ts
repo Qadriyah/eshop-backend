@@ -56,7 +56,7 @@ export class PaymentsService {
       const session = await this.stripe.checkout.sessions.create({
         mode: 'payment',
         success_url: `${domain}/checkout/success?success=true`,
-        cancel_url: `${domain}/continue-to-checkout`,
+        cancel_url: `${domain}/cart`,
         automatic_tax: { enabled: true },
         line_items: lineItems,
         shipping_address_collection: {
@@ -84,7 +84,24 @@ export class PaymentsService {
             },
           },
           {
-            shipping_rate: checkoutSessionDto.shippingRate,
+            shipping_rate_data: {
+              type: 'fixed_amount',
+              fixed_amount: {
+                amount: 1900,
+                currency: 'usd',
+              },
+              display_name: '2 day shipping',
+              delivery_estimate: {
+                minimum: {
+                  unit: 'business_day',
+                  value: 1,
+                },
+                maximum: {
+                  unit: 'business_day',
+                  value: 2,
+                },
+              },
+            },
           },
         ],
         customer_email: checkoutSessionDto.email,
@@ -109,7 +126,7 @@ export class PaymentsService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'payment',
             message: 'Something went wrong',
@@ -130,7 +147,7 @@ export class PaymentsService {
       // Handle the event
       switch (event.type) {
         case 'payment_intent.succeeded':
-          const paymentIntentSucceeded = event.data.object;
+          // const paymentIntentSucceeded = event.data.object;
           break;
         case 'checkout.session.completed':
           const checkouSessionSucceeded = event.data.object;
@@ -156,7 +173,7 @@ export class PaymentsService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'payment',
             message: 'Something went wrong',
@@ -181,7 +198,7 @@ export class PaymentsService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'payment',
             message: 'Something went wrong',
@@ -204,7 +221,7 @@ export class PaymentsService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'payment',
             message: 'Something went wrong',
@@ -225,7 +242,7 @@ export class PaymentsService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'payment',
             message: 'Something went wrong',
@@ -243,7 +260,7 @@ export class PaymentsService {
       if (!order) {
         throw new InternalServerErrorException({
           statusCode: HttpStatus.NOT_FOUND,
-          message: [
+          errors: [
             {
               field: 'order',
               message: 'Order was not found',
@@ -262,7 +279,7 @@ export class PaymentsService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'payment',
             message: 'Something went wrong',

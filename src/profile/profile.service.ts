@@ -27,7 +27,7 @@ export class ProfileService {
       if (!user) {
         throw new ForbiddenException({
           statusCode: HttpStatus.NOT_FOUND,
-          message: [
+          errors: [
             {
               field: 'user',
               message: 'User not found',
@@ -42,14 +42,11 @@ export class ProfileService {
     } catch (err) {
       this.logger.error('profile.service.create', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'firstName',
             message: 'Something went wrong',
@@ -77,14 +74,11 @@ export class ProfileService {
     } catch (err) {
       this.logger.error('profile.service.findOne', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'firstName',
             message: 'Something went wrong',

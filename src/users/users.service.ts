@@ -32,7 +32,7 @@ export class UsersService {
       if (user) {
         throw new ConflictException({
           statusCode: HttpStatus.CONFLICT,
-          message: [
+          errors: [
             {
               field: 'email',
               message: 'Email is already taken',
@@ -59,7 +59,7 @@ export class UsersService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -75,14 +75,11 @@ export class UsersService {
     } catch (err) {
       this.logger.error('user.service.findAll', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -98,14 +95,11 @@ export class UsersService {
     } catch (err) {
       this.logger.error('user.service.findOne', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -127,14 +121,11 @@ export class UsersService {
     } catch (err) {
       this.logger.error('user.service.update', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -153,14 +144,11 @@ export class UsersService {
     } catch (err) {
       this.logger.error('user.service.remove', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',

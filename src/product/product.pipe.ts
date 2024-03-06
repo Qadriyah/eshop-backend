@@ -21,7 +21,10 @@ export class CreateProductValidationPipe implements PipeTransform {
     const { error } = CreateProductSchema.validate(value);
     if (error) {
       const errors = this.commonService.formatError(error);
-      throw new BadRequestException(errors);
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        errors,
+      });
     }
     return value;
   }
@@ -35,7 +38,10 @@ export class UpdateProductValidationPipe implements PipeTransform {
     const { error } = UpdateProductSchema.validate(value);
     if (error) {
       const errors = this.commonService.formatError(error);
-      throw new BadRequestException(errors);
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        errors,
+      });
     }
     return value;
   }
@@ -47,7 +53,7 @@ export class ImageTransformPipe implements PipeTransform {
     if (!file) {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,
-        message: [
+        errors: [
           {
             field: 'name',
             message: 'No file was uploaded',
@@ -58,7 +64,7 @@ export class ImageTransformPipe implements PipeTransform {
     if (file.size > Math.pow(10, 7)) {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,
-        message: [
+        errors: [
           {
             field: 'name',
             message: 'Uploaded file is too large',

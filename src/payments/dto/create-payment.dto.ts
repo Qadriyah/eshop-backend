@@ -26,13 +26,11 @@ export class CreatePaymentDto {
 
 export class CheckoutSessionDto {
   email: string;
-  shippingRate: string;
   lineItems: OrderItem[];
 }
 
 export const CheckoutSessionValidation = Joi.object({
   email: Joi.string().email().required(),
-  shippingRate: Joi.string().required(),
   lineItems: Joi.array()
     .items(
       Joi.object({

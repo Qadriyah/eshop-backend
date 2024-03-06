@@ -9,10 +9,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { LoggerService } from './logger/logger.service';
 
-const whitelist = [
-  'http://localhost:3000',
-  'https://dbeb-41-75-182-26.ngrok-free.app',
-];
+export const whitelistOrigins = ['http://localhost:3000'];
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -27,7 +24,7 @@ async function bootstrap() {
   );
   app.enableCors({
     origin: function (origin, callback) {
-      if (!origin || whitelist.indexOf(origin) !== -1) {
+      if (!origin || whitelistOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
         callback(new ForbiddenException('Not allowed by CORS'));

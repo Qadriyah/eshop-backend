@@ -36,11 +36,12 @@ export class AuthGuard implements CanActivate {
         return await this.refreshToken(refreshToken, context);
       }
       const response = context.switchToHttp().getResponse();
-      response.cookie('authentication', '');
-      response.cookie('rtoken', '');
+      response.cookie('authentication', '', { expires: new Date(0) });
+      response.cookie('rtoken', '', { expires: new Date(0) });
+      response.cookie('islogin', '', { expires: new Date(0) });
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
-        message: [
+        errors: [
           {
             field: '',
             message: 'Token is missing in the request',
@@ -57,7 +58,7 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
-        message: [
+        errors: [
           {
             field: '',
             message: 'Token is missing in the request',
@@ -75,7 +76,7 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
-        message: [
+        errors: [
           {
             field: '',
             message: 'Token is missing in the request',
@@ -98,11 +99,12 @@ export class AuthGuard implements CanActivate {
     });
 
     if (!user) {
-      response.cookie('authentication', '');
-      response.cookie('rtoken', '');
+      response.cookie('authentication', '', { expires: new Date(0) });
+      response.cookie('rtoken', '', { expires: new Date(0) });
+      response.cookie('islogin', '', { expires: new Date(0) });
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
-        message: [
+        errors: [
           {
             field: '',
             message: 'Token is missing in the request',
@@ -130,6 +132,7 @@ export class AuthGuard implements CanActivate {
     response.cookie('rtoken', rToken, {
       httpOnly: true,
     });
+    response.cookie('islogin', 'true');
     return true;
   }
 
@@ -145,11 +148,12 @@ export class AuthGuard implements CanActivate {
     });
 
     if (!user) {
-      response.cookie('authentication', '');
-      response.cookie('rtoken', '');
+      response.cookie('authentication', '', { expires: new Date(0) });
+      response.cookie('rtoken', '', { expires: new Date(0) });
+      response.cookie('islogin', '', { expires: new Date(0) });
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
-        message: [
+        errors: [
           {
             field: '',
             message: 'Token is missing in the request',
