@@ -28,7 +28,7 @@ export class SalesService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'order',
             message: 'Something went wrong',
@@ -49,7 +49,7 @@ export class SalesService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'order',
             message: 'Something went wrong',
@@ -81,7 +81,7 @@ export class SalesService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'order',
             message: 'Something went wrong',

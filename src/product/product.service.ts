@@ -30,14 +30,11 @@ export class ProductService {
     } catch (err) {
       this.logger.error('product.service.create', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'name',
             message: 'Something went wrong',
@@ -54,14 +51,11 @@ export class ProductService {
     } catch (err) {
       this.logger.error('product.service.findAll', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'name',
             message: 'Something went wrong',
@@ -78,14 +72,11 @@ export class ProductService {
     } catch (err) {
       this.logger.error('product.service.findOne', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'name',
             message: 'Something went wrong',
@@ -105,14 +96,11 @@ export class ProductService {
     } catch (err) {
       this.logger.error('product.service.update', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'name',
             message: 'Something went wrong',
@@ -132,14 +120,11 @@ export class ProductService {
     } catch (err) {
       this.logger.error('product.service.remove', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'name',
             message: 'Something went wrong',
@@ -155,7 +140,7 @@ export class ProductService {
       if (!product) {
         throw new NotFoundException({
           statusCode: HttpStatus.NOT_FOUND,
-          message: [
+          errors: [
             {
               field: 'name',
               message: 'Product not found',
@@ -175,14 +160,11 @@ export class ProductService {
     } catch (err) {
       this.logger.error('product.service.uploadImage', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'name',
             message: 'Something went wrong',
@@ -206,14 +188,11 @@ export class ProductService {
     } catch (err) {
       this.logger.error('product.service.downloadImage', err);
       if (err.status !== 500) {
-        return {
-          statusCode: err.status,
-          ...err.response,
-        };
+        throw err;
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'name',
             message: 'Something went wrong',

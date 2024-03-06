@@ -31,4 +31,5 @@ export class AuthResponse {
   refreshToken?: string;
   user?: UserDocument;
   profile?: ProfileDocument;
+  authUrl?: string;
 }

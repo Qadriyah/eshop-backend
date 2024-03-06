@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  PipeTransform,
+} from '@nestjs/common';
 import {
   CreateAuthDto,
   CreateAuthSchema,
@@ -15,7 +20,10 @@ export class AuthPipe implements PipeTransform {
     const { error } = CreateAuthSchema.validate(value);
     if (error) {
       const errors = this.commonService.formatError(error);
-      throw new BadRequestException(errors);
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        errors,
+      });
     }
     return value;
   }
@@ -29,7 +37,10 @@ export class VisitorAuthPipe implements PipeTransform {
     const { error } = CreateVisitorAuthSchema.validate(value);
     if (error) {
       const errors = this.commonService.formatError(error);
-      throw new BadRequestException(errors);
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        errors,
+      });
     }
     return value;
   }

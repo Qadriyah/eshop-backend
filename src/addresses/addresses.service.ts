@@ -28,7 +28,7 @@ export class AddressesService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -49,7 +49,7 @@ export class AddressesService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -70,7 +70,7 @@ export class AddressesService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -97,7 +97,7 @@ export class AddressesService {
       }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: [
+        errors: [
           {
             field: 'email',
             message: 'Something went wrong',
@@ -120,7 +120,7 @@ export class AddressesService {
     //   }
     //   throw new InternalServerErrorException({
     //     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-    //     message: [
+    //     errors: [
     //       {
     //         field: 'email',
     //         message: 'Something went wrong',

@@ -15,19 +15,23 @@ import {
   CreateVisitorAuthDto,
 } from './dto/create-auth.dto';
 import { AuthPipe, VisitorAuthPipe } from './auth.pipe';
+import { whitelistOrigins } from '../main';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('login')
   async create(
     @Body(AuthPipe) createAuthDto: CreateAuthDto,
     @Res() response: Response,
   ): Promise<AuthResponse> {
-    const { user, accessToken, refreshToken } = await this.authService.create(
+    const { accessToken, refreshToken } = await this.authService.create(
       createAuthDto,
-      response,
     );
     response.cookie('authentication', accessToken, {
       httpOnly: true,
@@ -35,10 +39,10 @@ export class AuthController {
     response.cookie('rtoken', refreshToken, {
       httpOnly: true,
     });
+    response.cookie('islogin', 'true');
     return response.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       message: 'Success',
-      user,
     });
   }
 
@@ -47,26 +51,31 @@ export class AuthController {
     @Body(VisitorAuthPipe) creadteAuthDto: CreateVisitorAuthDto,
     @Res() response: Response,
   ): Promise<AuthResponse> {
-    const { user, profile, accessToken } =
-      await this.authService.createGuestAuth(creadteAuthDto);
+    const { accessToken } = await this.authService.createGuestAuth(
+      creadteAuthDto,
+    );
+    const expires = new Date();
+    expires.setSeconds(
+      expires.getSeconds() + this.configService.get('JWT_TTL_SEC'),
+    );
     response.cookie('authentication', accessToken, {
       httpOnly: true,
+      expires,
     });
     return response.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       message: 'Success',
-      user,
-      profile,
     });
   }
 
   @Post('google-auth-url')
-  async getAuthUrl(@Res() response: Response) {
-    response.header('Access-Control-Allow-Origin', '*');
+  async getAuthUrl(@Res() response: Response): Promise<AuthResponse> {
+    response.header('Access-Control-Allow-Origin', whitelistOrigins);
     response.header('Referrer-Policy', 'no-referrer-when-downgrade');
     const authUrl = await this.authService.getGoogleAuthourizedUrl();
     return response.status(HttpStatus.OK).json({
-      url: authUrl,
+      statusCode: HttpStatus.OK,
+      authUrl,
     });
   }
 
@@ -74,20 +83,28 @@ export class AuthController {
   async getAuth(
     @Req() request: Request,
     @Res() response: Response,
-  ): Promise<AuthResponse> {
+  ): Promise<void> {
     const { code } = request.query;
-    const { user, accessToken, refreshToken } =
-      await this.authService.getGoogleAuth(code as string, response);
+    const { accessToken, refreshToken } = await this.authService.getGoogleAuth(
+      code as string,
+    );
     response.cookie('authentication', accessToken, {
       httpOnly: true,
     });
     response.cookie('rtoken', refreshToken, {
       httpOnly: true,
     });
+    response.cookie('islogin', 'true');
+    response.redirect('http://localhost:3000');
+  }
+
+  @Post('logout')
+  logoutUser(@Res() response: Response) {
+    response.cookie('authentication', '', { expires: new Date(0) });
+    response.cookie('rtoken', '', { expires: new Date(0) });
+    response.cookie('islogin', 'false', { expires: new Date(0) });
     return response.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
-      message: 'Success',
-      user,
     });
   }
 }
