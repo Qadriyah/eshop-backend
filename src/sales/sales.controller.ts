@@ -7,25 +7,34 @@ import {
   Param,
   Delete,
   UseGuards,
+  HttpStatus,
 } from '@nestjs/common';
 import { SalesService } from './sales.service';
-import { CreateSaleDto } from './dto/create-sale.dto';
+import { CreateSaleDto, SalesResponse } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
-import { AuthVisitorGuard } from '../auth/visitor/visitor.guard';
+import { AuthGuard } from '../auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('sales')
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
-  @UseGuards(AuthVisitorGuard)
-  @Post('visitor/checkout')
-  create(@Body() createSaleDto: CreateSaleDto) {
-    return this.salesService.create(createSaleDto);
+  @Post()
+  async create(@Body() createSaleDto: CreateSaleDto): Promise<SalesResponse> {
+    const sale = await this.salesService.create(createSaleDto);
+    return {
+      statusCode: HttpStatus.OK,
+      sale,
+    };
   }
 
   @Get()
-  findAll() {
-    return this.salesService.findAll();
+  async findAll(): Promise<SalesResponse> {
+    const sales = await this.salesService.findAll();
+    return {
+      statusCode: HttpStatus.OK,
+      sales,
+    };
   }
 
   @Get(':id')
