@@ -59,8 +59,25 @@ export class SalesService {
     }
   }
 
-  findAll() {
-    return `This action returns all sales`;
+  async findAll(): Promise<SaleDocument[]> {
+    try {
+      const sales = await this.salesRepository.find({});
+      return sales;
+    } catch (err) {
+      this.logger.error('sales.service.findAll', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'order',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
   }
 
   findOne(id: number) {

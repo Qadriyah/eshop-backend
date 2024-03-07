@@ -6,7 +6,7 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { ProfileModule } from '../profile/profile.module';
 import { CommonService } from '@app/common';
-import { VisitorModule } from './visitor/visitor.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   controllers: [AuthController],
@@ -14,14 +14,19 @@ import { VisitorModule } from './visitor/visitor.module';
   imports: [
     UsersModule,
     ProfileModule,
-    JwtModule.register({
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
       global: true,
-      secret: process.env.JWT_SECRET as string,
-      signOptions: {
-        expiresIn: process.env.JWT_TTL as string,
+      useFactory: (configService: ConfigService) => {
+        return {
+          secret: configService.get('JWT_SECRET'),
+          signOptions: {
+            expiresIn: configService.get('JWT_TTL'),
+          },
+        };
       },
+      inject: [ConfigService],
     }),
-    VisitorModule,
   ],
 })
 export class AuthModule {}

@@ -174,7 +174,7 @@ export class ProductService {
     }
   }
 
-  async downloadImage() {
+  async downloadImage(): Promise<any> {
     try {
       const options = {
         root: `${__dirname}/../uploads`,
