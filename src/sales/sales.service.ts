@@ -80,13 +80,33 @@ export class SalesService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} sale`;
+  async findOne(id: string): Promise<SaleDocument> {
+    try {
+      const sale = await this.salesRepository.findOne({ _id: id });
+      return sale;
+    } catch (err) {
+      this.logger.error('sales.service.findOne', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'order',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
   }
 
-  update(id: string, updateSaleDto: UpdateSaleDto): Promise<SaleDocument> {
+  async update(
+    id: string,
+    updateSaleDto: UpdateSaleDto,
+  ): Promise<SaleDocument> {
     try {
-      const order = this.salesRepository.findOneAndUpdate(
+      const order = await this.salesRepository.findOneAndUpdate(
         { _id: id },
         updateSaleDto,
       );
@@ -108,7 +128,24 @@ export class SalesService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} sale`;
+  async findCustomerSales(customerId: string): Promise<SaleDocument[]> {
+    try {
+      const sales = await this.salesRepository.find({ user: customerId });
+      return sales;
+    } catch (err) {
+      this.logger.error('sales.service.getCustomerSales', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'order',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
   }
 }
