@@ -16,6 +16,7 @@ import { AddressesModule } from './addresses/addresses.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { memoryStorage } from 'multer';
     CustomersModule,
     AddressesModule,
     PaymentsModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

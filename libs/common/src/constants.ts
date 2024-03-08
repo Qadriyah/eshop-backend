@@ -35,3 +35,8 @@ export const SALE_STATUS = {
   cancelled: 'Cancelled',
   refunded: 'Refunded',
 };
+
+export const MSG_STATUS = {
+  read: 'Read',
+  unread: 'Unread',
+};
