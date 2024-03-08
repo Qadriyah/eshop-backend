@@ -109,6 +109,6 @@ export class ProductController {
     @Res() response: Response,
   ) {
     const fileOptions = await this.productService.downloadImage();
-    response.sendFile(filename, fileOptions);
+    response.sendFile(filename, fileOptions as any);
   }
 }

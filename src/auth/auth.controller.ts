@@ -68,7 +68,7 @@ export class AuthController {
     });
   }
 
-  @Post('google-auth-url')
+  @Post('google-auth-url') // when you click the google button, we shall call this end point.
   async getAuthUrl(@Res() response: Response): Promise<AuthResponse> {
     response.header('Access-Control-Allow-Origin', whitelistOrigins);
     response.header('Referrer-Policy', 'no-referrer-when-downgrade');
