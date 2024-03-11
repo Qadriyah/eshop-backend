@@ -14,6 +14,7 @@ import { ProfileDocument } from './entities/profile.entity';
 @Injectable()
 export class ProfileService {
   private readonly logger = new Logger(ProfileService.name);
+
   constructor(
     private readonly profileRepository: ProfileRepository,
     private readonly userRepository: UserRepository,

@@ -28,7 +28,7 @@ export class AuthController {
   @Post('login')
   async create(
     @Body(AuthPipe) createAuthDto: CreateAuthDto,
-    @Res() response: Response,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
     const { accessToken, refreshToken } = await this.authService.create(
       createAuthDto,
@@ -40,16 +40,16 @@ export class AuthController {
       httpOnly: true,
     });
     response.cookie('islogin', 'true');
-    return response.status(HttpStatus.OK).json({
+    return {
       statusCode: HttpStatus.OK,
       message: 'Success',
-    });
+    };
   }
 
   @Post('guest')
   async loginGuest(
     @Body(VisitorAuthPipe) creadteAuthDto: CreateVisitorAuthDto,
-    @Res() response: Response,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
     const { accessToken } = await this.authService.createGuestAuth(
       creadteAuthDto,
@@ -62,28 +62,30 @@ export class AuthController {
       httpOnly: true,
       expires,
     });
-    return response.status(HttpStatus.OK).json({
+    return {
       statusCode: HttpStatus.OK,
       message: 'Success',
-    });
+    };
   }
 
   @Post('google-auth-url')
-  async getAuthUrl(@Res() response: Response): Promise<AuthResponse> {
+  async getAuthUrl(
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthResponse> {
     response.header('Access-Control-Allow-Origin', whitelistOrigins);
     response.header('Referrer-Policy', 'no-referrer-when-downgrade');
     const authUrl = await this.authService.getGoogleAuthourizedUrl();
-    return response.status(HttpStatus.OK).json({
+    return {
       statusCode: HttpStatus.OK,
       authUrl,
-    });
+    };
   }
 
   @Get('google-auth')
   async getAuth(
     @Req() request: Request,
-    @Res() response: Response,
-  ): Promise<void> {
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthResponse> {
     const { code } = request.query;
     const { accessToken, refreshToken } = await this.authService.getGoogleAuth(
       code as string,
@@ -95,16 +97,22 @@ export class AuthController {
       httpOnly: true,
     });
     response.cookie('islogin', 'true');
-    response.redirect('http://localhost:3000');
+    response.redirect(this.configService.get('REDIRECT_FRONTEND_URL'));
+    return {
+      statusCode: HttpStatus.OK,
+    };
   }
 
   @Post('logout')
-  logoutUser(@Res() response: Response) {
+  async logoutUser(
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthResponse> {
     response.cookie('authentication', '', { expires: new Date(0) });
     response.cookie('rtoken', '', { expires: new Date(0) });
     response.cookie('islogin', 'false', { expires: new Date(0) });
-    return response.status(HttpStatus.OK).json({
+    return {
       statusCode: HttpStatus.OK,
-    });
+      message: 'Success',
+    };
   }
 }

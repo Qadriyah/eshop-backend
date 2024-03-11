@@ -10,7 +10,7 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
-  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProductService } from './product.service';
@@ -22,7 +22,6 @@ import {
   ImageTransformPipe,
   UpdateProductValidationPipe,
 } from './product.pipe';
-import { Response } from 'express';
 
 @Controller('products')
 export class ProductController {
@@ -106,9 +105,8 @@ export class ProductController {
   @Get('download/:filename')
   async downloadImage(
     @Param('filename') filename: string,
-    @Res() response: Response,
-  ) {
-    const fileOptions = await this.productService.downloadImage();
-    response.sendFile(filename, fileOptions);
+  ): Promise<StreamableFile> {
+    const file = await this.productService.downloadImage(filename);
+    return new StreamableFile(file);
   }
 }

@@ -1,29 +1,31 @@
 import { Module } from '@nestjs/common';
-import { MessagesService } from './messages.service';
-import { MessagesController } from './messages.controller';
-import { MessagesRepository } from './messages.repository';
+import { EmailsService } from './emails.service';
+import { EmailsController } from './emails.controller';
+import { EmailsRepository } from './emails.repository';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Message, MessageSchema } from './entities/message.entity';
+import { Email, EmailSchema } from './entities/email.entity';
 import { UserRepository } from '../users/users.repository';
 import { User, UserSchema } from '../users/entities/user.entity';
 import { CommonService } from '@app/common';
-import { EmailsService } from '../emails/emails.service';
 import { BullModule } from '@nestjs/bull';
+import { EmailsProcessor } from './emails.processor';
+import { EmailsSendgrid } from './emails.sendgrid';
 
 @Module({
-  controllers: [MessagesController],
+  controllers: [EmailsController],
   providers: [
-    MessagesService,
-    CommonService,
     EmailsService,
-    MessagesRepository,
+    CommonService,
+    EmailsRepository,
     UserRepository,
+    EmailsProcessor,
+    EmailsSendgrid,
   ],
   imports: [
     MongooseModule.forFeature([
       {
-        name: Message.name,
-        schema: MessageSchema,
+        name: Email.name,
+        schema: EmailSchema,
       },
       {
         name: User.name,
@@ -35,4 +37,4 @@ import { BullModule } from '@nestjs/bull';
     }),
   ],
 })
-export class MessagesModule {}
+export class EmailsModule {}
