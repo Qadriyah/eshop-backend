@@ -3,24 +3,17 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
-  NotFoundException,
 } from '@nestjs/common';
 import { PRODUCT_STATUS } from '@app/common/constants';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductRepository } from './product.repository';
 import { ProductDocument } from './entities/product.entity';
-import { ConfigService } from '@nestjs/config';
-import { createReadStream } from 'fs';
-import { join } from 'path';
 
 @Injectable()
 export class ProductService {
   private readonly logger = new Logger(ProductService.name);
-  constructor(
-    private readonly productRepo: ProductRepository,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly productRepo: ProductRepository) {}
 
   async create(createProductDto: CreateProductDto): Promise<ProductDocument> {
     try {
@@ -121,67 +114,6 @@ export class ProductService {
       return product;
     } catch (err) {
       this.logger.error('product.service.remove', err);
-      if (err.status !== 500) {
-        throw err;
-      }
-      throw new InternalServerErrorException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errors: [
-          {
-            field: 'name',
-            message: 'Something went wrong',
-          },
-        ],
-      });
-    }
-  }
-
-  async uploadImage(filename: string, productId: string) {
-    try {
-      const product = await this.productRepo.findOne({ _id: productId });
-      if (!product) {
-        throw new NotFoundException({
-          statusCode: HttpStatus.NOT_FOUND,
-          errors: [
-            {
-              field: 'name',
-              message: 'Product not found',
-            },
-          ],
-        });
-      }
-      const imageLocation = `${this.configService.get(
-        'BASE_URL',
-      )}/products/download/${filename}`;
-
-      await this.productRepo.findOneAndUpdate(
-        { _id: productId },
-        { images: [...product.images, imageLocation] },
-      );
-      return filename;
-    } catch (err) {
-      this.logger.error('product.service.uploadImage', err);
-      if (err.status !== 500) {
-        throw err;
-      }
-      throw new InternalServerErrorException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errors: [
-          {
-            field: 'name',
-            message: 'Something went wrong',
-          },
-        ],
-      });
-    }
-  }
-
-  async downloadImage(filename: string): Promise<any> {
-    try {
-      const file = createReadStream(join(process.cwd(), 'uploads', filename));
-      return file;
-    } catch (err) {
-      this.logger.error('product.service.downloadImage', err);
       if (err.status !== 500) {
         throw err;
       }

@@ -19,6 +19,7 @@ import { AddressesModule } from './addresses/addresses.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MessagesModule } from './messages/messages.module';
 import { EmailsModule } from './emails/emails.module';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { EmailsModule } from './emails/emails.module';
     PaymentsModule,
     MessagesModule,
     EmailsModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
