@@ -11,6 +11,8 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductRepository } from './product.repository';
 import { ProductDocument } from './entities/product.entity';
 import { ConfigService } from '@nestjs/config';
+import { createReadStream } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class ProductService {
@@ -174,17 +176,10 @@ export class ProductService {
     }
   }
 
-  async downloadImage(): Promise<any> {
+  async downloadImage(filename: string): Promise<any> {
     try {
-      const options = {
-        root: `${__dirname}/../uploads`,
-        dotfiles: 'deny',
-        headers: {
-          'x-timestamp': Date.now(),
-          'x-sent': true,
-        },
-      };
-      return options;
+      const file = createReadStream(join(process.cwd(), 'uploads', filename));
+      return file;
     } catch (err) {
       this.logger.error('product.service.downloadImage', err);
       if (err.status !== 500) {

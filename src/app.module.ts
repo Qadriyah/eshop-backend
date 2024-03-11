@@ -4,6 +4,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
+import { BullModule } from '@nestjs/bull';
+import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import * as Joi from 'joi';
 import { CommonModule } from '@app/common';
 import { LoggerModule } from './logger/logger.module';
@@ -14,9 +17,8 @@ import { SalesModule } from './sales/sales.module';
 import { CustomersModule } from './customers/customers.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { PaymentsModule } from './payments/payments.module';
-import { MulterModule } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 import { MessagesModule } from './messages/messages.module';
+import { EmailsModule } from './emails/emails.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { MessagesModule } from './messages/messages.module';
         BASE_URL: Joi.string().required(),
         REDIRECT_FRONTEND_URL: Joi.string().required(),
         STRIPE_WEBHOOK_TOKEN: Joi.string().required(),
+        SENDGRID_API_KEY: Joi.string().required(),
+        EMAIL_SENDER: Joi.string().required(),
       }),
       // envFilePath: `./config/${process.env.NODE_ENV}.env`,
     }),
@@ -43,6 +47,17 @@ import { MessagesModule } from './messages/messages.module';
       useFactory: () => ({
         storage: memoryStorage(),
       }),
+    }),
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true,
+        attempts: 3,
+      },
     }),
     CommonModule,
     UsersModule,
@@ -55,6 +70,7 @@ import { MessagesModule } from './messages/messages.module';
     AddressesModule,
     PaymentsModule,
     MessagesModule,
+    EmailsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
