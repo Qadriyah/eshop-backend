@@ -76,14 +76,9 @@ export class Sale {
 
   @Prop({ default: SALE_STATUS.pending })
   status: SaleStatusType;
+
+  @Prop()
+  orderNumber: string;
 }
 
 export const SaleSchema = SchemaFactory.createForClass(Sale);
-
-SaleSchema.virtual('totalAmount').get(function () {
-  const totalAmount = this.lineItems?.reduce(
-    (total, item) => (total += item.quantity * item.price),
-    0,
-  );
-  return totalAmount;
-});

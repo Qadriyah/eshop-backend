@@ -4,8 +4,9 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
-import { CreateProfileDto } from './dto/create-profile.dto';
+import { CreateProfileDto, ProfileResponse } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../users/users.repository';
@@ -89,8 +90,39 @@ export class ProfileService {
     }
   }
 
-  update(id: number, updateProfileDto: UpdateProfileDto) {
-    return `This action updates a #${id} profile`;
+  async update(
+    userId: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<ProfileDocument> {
+    try {
+      let profile = await this.profileRepository.findOne({ user: userId });
+      if (!profile) {
+        profile = await this.profileRepository.create(
+          updateProfileDto as unknown as ProfileDocument,
+        );
+      } else {
+        profile = await this.profileRepository.findOneAndUpdate(
+          { _id: profile.id },
+          updateProfileDto,
+        );
+      }
+
+      return profile;
+    } catch (err) {
+      this.logger.error('profile.service.update', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'firstName',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
   }
 
   remove(id: number) {

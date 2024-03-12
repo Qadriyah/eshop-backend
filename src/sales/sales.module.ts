@@ -19,14 +19,27 @@ import { CommonService } from '@app/common';
     UserRepository,
   ],
   imports: [
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: Sale.name,
-        schema: SaleSchema,
+        useFactory: function () {
+          const schema = SaleSchema;
+          schema.virtual('totalAmount').get(function () {
+            const totalAmount = this.lineItems?.reduce(
+              (total, item) => (total += item.quantity * item.price),
+              0,
+            );
+            return totalAmount;
+          });
+          return schema;
+        },
       },
       {
         name: User.name,
-        schema: UserSchema,
+        useFactory: function () {
+          const schema = UserSchema;
+          return schema;
+        },
       },
     ]),
   ],

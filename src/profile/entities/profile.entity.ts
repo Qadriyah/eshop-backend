@@ -34,7 +34,3 @@ export class Profile {
 }
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);
-
-ProfileSchema.virtual('fullName').get(function () {
-  return `${this.lastName || ''} ${this.firstName || ''}`;
-});
