@@ -13,14 +13,23 @@ import { User, UserSchema } from '../users/entities/user.entity';
   providers: [ProfileService, ProfileRepository, UserRepository, CommonService],
   exports: [ProfileService, ProfileRepository],
   imports: [
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: Profile.name,
-        schema: ProfileSchema,
+        useFactory: function () {
+          const schema = ProfileSchema;
+          schema.virtual('fullName').get(function () {
+            return `${this.lastName || ''} ${this.firstName || ''}`;
+          });
+          return schema;
+        },
       },
       {
         name: User.name,
-        schema: UserSchema,
+        useFactory: function () {
+          const schema = UserSchema;
+          return schema;
+        },
       },
     ]),
   ],

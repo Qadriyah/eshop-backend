@@ -15,14 +15,14 @@ import { CommonService } from '@app/common';
     MongooseModule.forFeatureAsync([
       {
         name: Product.name,
-        useFactory: () => {
+        useFactory: function () {
           const schema = ProductSchema;
           return schema;
         },
       },
       {
         name: User.name,
-        useFactory: () => {
+        useFactory: function () {
           const schema = UserSchema;
           return schema;
         },

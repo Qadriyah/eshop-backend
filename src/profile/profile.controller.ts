@@ -7,11 +7,12 @@ import {
   Param,
   Delete,
   UseGuards,
+  HttpStatus,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { CreateProfileDto, ProfileResponse } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ProfileDocument } from './entities/profile.entity';
 import { AuthGuard } from '../auth/auth.guard';
 import { UserDocument } from '../users/entities/user.entity';
 import { CurrentUser } from '../auth/current.user.decorator';
@@ -24,27 +25,54 @@ export class ProfileController {
   @Post()
   async create(
     @Body() createProfileDto: CreateProfileDto,
-  ): Promise<ProfileDocument> {
-    return await this.profileService.create(createProfileDto);
+  ): Promise<ProfileResponse> {
+    const profile = await this.profileService.create(createProfileDto);
+    return {
+      statusCode: HttpStatus.OK,
+      profile,
+    };
   }
 
   @Get()
-  async findAll(): Promise<ProfileDocument[]> {
-    return await this.profileService.findAll();
+  async findAll(): Promise<ProfileResponse> {
+    const profiles = await this.profileService.findAll();
+    return {
+      statusCode: HttpStatus.OK,
+      profiles,
+    };
   }
 
   @Get('me')
   async findOne(@CurrentUser() user: UserDocument): Promise<ProfileResponse> {
     const profile = await this.profileService.findOne(user.id);
     return {
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       profile,
     };
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.profileService.update(+id, updateProfileDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateProfileDto: UpdateProfileDto,
+    @CurrentUser() user: UserDocument,
+  ): Promise<ProfileResponse> {
+    if (String(id) !== String(user.id)) {
+      throw new ForbiddenException({
+        statusCode: HttpStatus.FORBIDDEN,
+        errors: [
+          {
+            field: 'firstName',
+            message: 'You are not allowed to perform this operation',
+          },
+        ],
+      });
+    }
+    const profile = await this.profileService.update(id, updateProfileDto);
+    return {
+      statusCode: HttpStatus.OK,
+      profile,
+    };
   }
 
   @Delete(':id')
