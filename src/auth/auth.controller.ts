@@ -17,12 +17,16 @@ import {
 import { AuthPipe, VisitorAuthPipe } from './auth.pipe';
 import { whitelistOrigins } from '../main';
 import { ConfigService } from '@nestjs/config';
+import { PaymentsCustomerService } from '../payments/payments.customer.service';
+import { ProfileService } from '../profile/profile.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    private readonly customerService: PaymentsCustomerService,
+    private readonly profileService: ProfileService,
   ) {}
 
   @Post('login')
@@ -51,9 +55,15 @@ export class AuthController {
     @Body(VisitorAuthPipe) creadteAuthDto: CreateVisitorAuthDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
-    const { accessToken } = await this.authService.createGuestAuth(
+    const { accessToken, userId } = await this.authService.createGuestAuth(
       creadteAuthDto,
     );
+    const profile = await this.profileService.findOne(String(userId));
+    if (!profile) {
+      await this.profileService.create({
+        user: userId,
+      });
+    }
     const expires = new Date();
     expires.setSeconds(
       expires.getSeconds() + this.configService.get('JWT_TTL_SEC'),
@@ -87,9 +97,29 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
     const { code } = request.query;
-    const { accessToken, refreshToken } = await this.authService.getGoogleAuth(
-      code as string,
-    );
+    const { accessToken, refreshToken, userId, userInfo } =
+      await this.authService.getGoogleAuth(code as string);
+
+    const customer = await this.customerService.createCustomer({
+      name: `${userInfo.family_name} ${userInfo.given_name}`,
+      email: userInfo.email,
+    });
+
+    const profile = await this.profileService.findOne(String(userId));
+    if (!profile) {
+      await this.profileService.create({
+        user: userId,
+        firstName: userInfo.given_name,
+        lastName: userInfo.family_name,
+        customer: customer.id,
+      });
+    } else {
+      await this.profileService.update(String(userId), {
+        firstName: userInfo.given_name,
+        lastName: userInfo.family_name,
+        customer: customer.id,
+      });
+    }
     response.cookie('authentication', accessToken, {
       httpOnly: true,
     });

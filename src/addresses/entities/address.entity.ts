@@ -26,7 +26,10 @@ export class Address {
   user: User;
 
   @Prop({ required: true })
-  address: string;
+  line1: string;
+
+  @Prop()
+  line2: string;
 
   @Prop({ required: true })
   city: string;
@@ -35,7 +38,10 @@ export class Address {
   state: string;
 
   @Prop({ required: true })
-  zipcode: string;
+  postal_code: string;
+
+  @Prop({ required: true })
+  country: string;
 
   @Prop({
     default: ADDRESS_TYPES.shipping,

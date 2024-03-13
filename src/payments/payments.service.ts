@@ -9,9 +9,7 @@ import { Request, Response } from 'express';
 import { CheckoutSessionDto } from './dto/create-payment.dto';
 import { ConfigService } from '@nestjs/config';
 import { ProductRepository } from '../product/product.repository';
-import { CommonService } from '@app/common';
 import { SalesService } from '../sales/sales.service';
-import { UserDocument } from '../users/entities/user.entity';
 import { SALE_STATUS } from '@app/common/constants';
 import { SaleStatusType } from 'src/sales/entities/sale.entity';
 
@@ -23,16 +21,12 @@ export class PaymentsService {
   constructor(
     private readonly configService: ConfigService,
     private readonly productRepository: ProductRepository,
-    private readonly commonService: CommonService,
     private readonly orderService: SalesService,
   ) {
     this.stripe = new Stripe(configService.get('STRIPE_SECRET_KEY'));
   }
 
-  async createCheckoutSession(
-    checkoutSessionDto: CheckoutSessionDto,
-    user: UserDocument,
-  ): Promise<Stripe.Checkout.Session> {
+  async createCheckoutSession(checkoutSessionDto: CheckoutSessionDto) {
     try {
       const lineItems = [];
       const domain = this.configService.get('REDIRECT_FRONTEND_URL');
@@ -105,20 +99,9 @@ export class PaymentsService {
           },
         ],
         customer_email: checkoutSessionDto.email,
+        customer: '',
       });
-
-      await this.orderService.create({
-        user: user.id,
-        session: session.id,
-        lineItems: lineItems.map((item) => ({
-          name: item.price_data.product_data.name,
-          price: item.price_data.unit_amount / 100,
-          quantity: item.quantity,
-          icon: item.price_data.product_data.images[0],
-        })),
-      });
-
-      return session;
+      return { session, lineItems };
     } catch (err) {
       this.logger.error('payments.service.checkoutSession', err);
       if (err.status !== 500) {

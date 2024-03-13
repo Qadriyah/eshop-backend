@@ -4,9 +4,8 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
-  NotFoundException,
 } from '@nestjs/common';
-import { CreateProfileDto, ProfileResponse } from './dto/create-profile.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../users/users.repository';

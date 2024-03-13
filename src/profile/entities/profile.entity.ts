@@ -31,6 +31,9 @@ export class Profile {
 
   @Prop()
   phone: string;
+
+  @Prop()
+  customer: string;
 }
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);
