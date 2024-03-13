@@ -1,15 +1,8 @@
-import { PickType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/mapped-types';
 import * as Joi from 'joi';
 import { CreateAddressDto } from './create-address.dto';
 
-export class UpdateAddressDto extends PickType(CreateAddressDto, [
-  'address',
-  'city',
-  'state',
-  'zipcode',
-] as const) {
-  type: string;
-}
+export class UpdateAddressDto extends PartialType(CreateAddressDto) {}
 
 export const UpdateAddressSchema = Joi.object({
   address: Joi.string(),

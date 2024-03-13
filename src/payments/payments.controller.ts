@@ -31,10 +31,18 @@ export class PaymentsController {
     @Body(CheckoutSessionPipe) checkoutSessionDto: CheckoutSessionDto,
     @CurrentUser() user: UserDocument,
   ): Promise<PaymentResponse> {
-    const session = await this.paymentsService.createCheckoutSession(
-      checkoutSessionDto,
-      user,
-    );
+    const { session, lineItems } =
+      await this.paymentsService.createCheckoutSession(checkoutSessionDto);
+    await this.orderService.create({
+      user: user.id,
+      session: session.id,
+      lineItems: lineItems.map((item) => ({
+        name: item.price_data.product_data.name,
+        price: item.price_data.unit_amount / 100,
+        quantity: item.quantity,
+        icon: item.price_data.product_data.images[0],
+      })),
+    });
     return {
       statusCode: HttpStatus.OK,
       session,

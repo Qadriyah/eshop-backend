@@ -9,6 +9,7 @@ import { UsersModule } from '../users/users.module';
 import { SalesService } from '../sales/sales.service';
 import { SalesRepository } from '../sales/sales.repository';
 import { Sale, SaleSchema } from '../sales/entities/sale.entity';
+import { PaymentsCustomerService } from './payments.customer.service';
 
 @Module({
   controllers: [PaymentsController],
@@ -16,6 +17,7 @@ import { Sale, SaleSchema } from '../sales/entities/sale.entity';
     PaymentsService,
     CommonService,
     SalesService,
+    PaymentsCustomerService,
     SalesRepository,
     ProductRepository,
   ],

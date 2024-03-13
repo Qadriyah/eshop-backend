@@ -2,19 +2,22 @@ import * as Joi from 'joi';
 import { AddressDocument } from '../entities/address.entity';
 
 export class CreateAddressDto {
-  address: string;
+  line1: string;
+  line2: string;
   city: string;
   state: string;
-  zipcode: string;
+  postal_code: string;
+  country: string;
   user?: string;
   type?: string;
 }
 
 export const CreateAddressSchema = Joi.object({
-  address: Joi.string().required(),
+  line1: Joi.string().required(),
+  line2: Joi.string(),
   city: Joi.string().required(),
   state: Joi.string().required(),
-  zipcode: Joi.string().required(),
+  postal_code: Joi.string().required(),
   type: Joi.string(),
 }).options({
   abortEarly: false,

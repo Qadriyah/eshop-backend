@@ -10,18 +10,15 @@ import { JwtService } from '@nestjs/jwt';
 import * as randtoken from 'rand-token';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
-import {
-  AuthResponse,
-  CreateAuthDto,
-  CreateVisitorAuthDto,
-} from './dto/create-auth.dto';
+import { CreateAuthDto, CreateVisitorAuthDto } from './dto/create-auth.dto';
 import { UserRepository } from '../users/users.repository';
 import { ProfileRepository } from '../profile/profile.repository';
 import { ConfigService } from '@nestjs/config';
 import { CommonService } from '@app/common';
 import { UserDocument } from '../users/entities/user.entity';
-import { ProfileDocument } from '../profile/entities/profile.entity';
 import { USER_TYPES } from '@app/common/constants';
+import { PaymentsCustomerService } from '../payments/payments.customer.service';
+import { CreateGuestAuth, CreateNormalAuth, GetGoogleAuth } from '@app/types';
 
 type UserInfoType = {
   sub: string;
@@ -45,6 +42,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly profileRepository: ProfileRepository,
+    private readonly customerService: PaymentsCustomerService,
   ) {
     this.oAuth2Client = new OAuth2Client(
       this.configService.get('CLIENT_ID'),
@@ -53,7 +51,7 @@ export class AuthService {
     );
   }
 
-  async create(createAuthDto: CreateAuthDto): Promise<AuthResponse> {
+  async create(createAuthDto: CreateAuthDto): Promise<CreateNormalAuth> {
     try {
       const user = await this.userRepository
         .findOne({
@@ -106,8 +104,6 @@ export class AuthService {
       const accessToken = await this.jwtService.signAsync(payload);
 
       return {
-        statusCode: HttpStatus.OK,
-        user,
         accessToken,
         refreshToken,
       };
@@ -151,7 +147,7 @@ export class AuthService {
     }
   }
 
-  async getGoogleAuth(code: string): Promise<AuthResponse> {
+  async getGoogleAuth(code: string): Promise<GetGoogleAuth> {
     try {
       const res = await this.oAuth2Client.getToken(code);
       this.oAuth2Client.setCredentials(res.tokens);
@@ -177,12 +173,6 @@ export class AuthService {
           avator: userInfo.picture,
           refreshToken,
         } as UserDocument);
-
-        await this.profileRepository.create({
-          user: user.id,
-          firstName: userInfo.given_name,
-          lastName: userInfo.family_name,
-        } as ProfileDocument);
       } else {
         const roles = user.roles.includes(USER_TYPES.admin)
           ? user.roles
@@ -196,16 +186,6 @@ export class AuthService {
             avator: userInfo.picture,
           },
         );
-        const profile = await this.profileRepository.findOne({ user: user.id });
-        if (profile) {
-          await this.profileRepository.findOneAndUpdate(
-            { _id: profile.id },
-            {
-              firstName: userInfo.given_name,
-              lastName: userInfo.family_name,
-            },
-          );
-        }
       }
 
       const payload = this.commonService.getTokenPayload({
@@ -216,10 +196,10 @@ export class AuthService {
       const accessToken = await this.jwtService.signAsync(payload);
 
       return {
-        statusCode: HttpStatus.OK,
-        user,
+        userId: user.id,
         accessToken,
         refreshToken,
+        userInfo,
       };
     } catch (err) {
       this.logger.error('auth.service.getAuth', err);
@@ -237,24 +217,18 @@ export class AuthService {
 
   async createGuestAuth(
     createGuestDto: CreateVisitorAuthDto,
-  ): Promise<AuthResponse> {
+  ): Promise<CreateGuestAuth> {
     try {
       const hashedPassword = await bcrypt.hash(randtoken.uid(16), 10);
       let user = await this.userRepository.findOne({
         email: createGuestDto.email,
       });
-      let profile = await this.profileRepository.findOne({ user: user?.id });
-
       if (!user) {
         user = await this.userRepository.create({
           email: createGuestDto.email,
           password: hashedPassword,
           roles: [USER_TYPES.guest],
         } as UserDocument);
-
-        profile = await this.profileRepository.create({
-          user: user.id,
-        } as ProfileDocument);
       }
 
       const payload = this.commonService.getTokenPayload({
@@ -265,14 +239,8 @@ export class AuthService {
       const accessToken = await this.jwtService.signAsync(payload);
 
       return {
-        statusCode: HttpStatus.OK,
-        profile,
         accessToken,
-        user: {
-          id: user.id,
-          email: user.email,
-          roles: user.roles,
-        } as UserDocument,
+        userId: user.id,
       };
     } catch (err) {
       this.logger.error('auth.service.loginVisitor', err);
