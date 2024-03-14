@@ -7,10 +7,17 @@ import { Profile, ProfileSchema } from './entities/profile.entity';
 import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../users/users.repository';
 import { User, UserSchema } from '../users/entities/user.entity';
+import { CustomersService } from '../customers/customers.service';
 
 @Module({
   controllers: [ProfileController],
-  providers: [ProfileService, ProfileRepository, UserRepository, CommonService],
+  providers: [
+    ProfileService,
+    ProfileRepository,
+    UserRepository,
+    CommonService,
+    CustomersService,
+  ],
   exports: [ProfileService, ProfileRepository],
   imports: [
     MongooseModule.forFeatureAsync([

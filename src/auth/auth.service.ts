@@ -12,13 +12,15 @@ import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
 import { CreateAuthDto, CreateVisitorAuthDto } from './dto/create-auth.dto';
 import { UserRepository } from '../users/users.repository';
-import { ProfileRepository } from '../profile/profile.repository';
 import { ConfigService } from '@nestjs/config';
-import { CommonService } from '@app/common';
+import {
+  CommonService,
+  CreateGuestAuth,
+  CreateNormalAuth,
+  GetGoogleAuth,
+} from '@app/common';
 import { UserDocument } from '../users/entities/user.entity';
 import { USER_TYPES } from '@app/common/constants';
-import { PaymentsCustomerService } from '../payments/payments.customer.service';
-import { CreateGuestAuth, CreateNormalAuth, GetGoogleAuth } from '@app/types';
 
 type UserInfoType = {
   sub: string;
@@ -41,8 +43,6 @@ export class AuthService {
     private readonly commonService: CommonService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly profileRepository: ProfileRepository,
-    private readonly customerService: PaymentsCustomerService,
   ) {
     this.oAuth2Client = new OAuth2Client(
       this.configService.get('CLIENT_ID'),

@@ -17,15 +17,15 @@ import {
 import { AuthPipe, VisitorAuthPipe } from './auth.pipe';
 import { whitelistOrigins } from '../main';
 import { ConfigService } from '@nestjs/config';
-import { PaymentsCustomerService } from '../payments/payments.customer.service';
 import { ProfileService } from '../profile/profile.service';
+import { CustomersService } from '../customers/customers.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-    private readonly customerService: PaymentsCustomerService,
+    private readonly customerService: CustomersService,
     private readonly profileService: ProfileService,
   ) {}
 

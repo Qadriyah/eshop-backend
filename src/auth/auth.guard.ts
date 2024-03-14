@@ -125,10 +125,12 @@ export class AuthGuard implements CanActivate {
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
-    const user = await this.userRepository.findOne({
-      _id: userId,
-      deleted: false,
-    });
+    const user = await this.userRepository
+      .findOne({
+        _id: userId,
+        deleted: false,
+      })
+      .populate(['profile']);
 
     if (!user) {
       response.cookie('authentication', '', { expires: new Date(0) });
