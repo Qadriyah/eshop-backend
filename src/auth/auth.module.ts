@@ -7,11 +7,11 @@ import { UsersModule } from '../users/users.module';
 import { ProfileModule } from '../profile/profile.module';
 import { CommonService } from '@app/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { PaymentsCustomerService } from '../payments/payments.customer.service';
+import { CustomersService } from '../customers/customers.service';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, CommonService, PaymentsCustomerService],
+  providers: [AuthService, CommonService, CustomersService],
   imports: [
     UsersModule,
     ProfileModule,

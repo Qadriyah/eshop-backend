@@ -16,11 +16,15 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { UserDocument } from '../users/entities/user.entity';
 import { CurrentUser } from '../auth/current.user.decorator';
+import { CustomersService } from '../customers/customers.service';
 
 @UseGuards(AuthGuard)
 @Controller('profile')
 export class ProfileController {
-  constructor(private readonly profileService: ProfileService) {}
+  constructor(
+    private readonly profileService: ProfileService,
+    private readonly customerService: CustomersService,
+  ) {}
 
   @Post()
   async create(
@@ -69,6 +73,10 @@ export class ProfileController {
       });
     }
     const profile = await this.profileService.update(id, updateProfileDto);
+    await this.customerService.updateCustomer(
+      profile.customer,
+      updateProfileDto,
+    );
     return {
       statusCode: HttpStatus.OK,
       profile,

@@ -1,7 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { ProfileDocument } from '../../profile/entities/profile.entity';
 
-export type UserDocument = HydratedDocument<User>;
+export type UserDocument = HydratedDocument<
+  User & { profile: ProfileDocument }
+>;
 
 @Schema({
   timestamps: true,
@@ -39,3 +42,10 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.virtual('profile', {
+  ref: 'Profile',
+  localField: '_id',
+  foreignField: 'user',
+  justOne: true,
+});
