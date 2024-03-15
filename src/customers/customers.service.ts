@@ -110,6 +110,9 @@ export class CustomersService {
         primary:
           paymentMethod.id === (customer as Stripe.Customer).default_source,
         expiry: `${paymentMethod.card?.exp_month}/${paymentMethod.card?.exp_year}`,
+        billing_address: {
+          ...paymentMethod.billing_details,
+        },
       }));
     } catch (err) {
       this.logger.error('customers.service.getPaymentMethonds', err);
@@ -138,7 +141,36 @@ export class CustomersService {
       });
       return card;
     } catch (err) {
-      this.logger.error('customers.service.addCustomerCard', err);
+      this.logger.error('customers.service.createPaymentMethod', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'payment',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async updatePaymentMethod(
+    customerId: string,
+    cardId: string,
+    data: Stripe.CustomerSourceUpdateParams,
+  ): Promise<Stripe.CustomerSource> {
+    try {
+      const card = await this.stripe.customers.updateSource(
+        customerId,
+        cardId,
+        data,
+      );
+      return card;
+    } catch (err) {
+      this.logger.error('customers.service.updatePaymentMethod', err);
       if (err.status !== 500) {
         throw err;
       }
@@ -156,15 +188,15 @@ export class CustomersService {
 
   async updateDefaultSource(
     customerId: string,
-    card: Stripe.CustomerSource,
+    cardId: string,
   ): Promise<Stripe.Customer> {
     try {
       const customer = await this.stripe.customers.update(customerId, {
-        default_source: card.id,
+        default_source: cardId,
       });
       return customer;
     } catch (err) {
-      this.logger.error('customers.service.addCustomerCard', err);
+      this.logger.error('customers.service.updateDefaultSource', err);
       if (err.status !== 500) {
         throw err;
       }

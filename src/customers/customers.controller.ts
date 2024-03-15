@@ -9,10 +9,15 @@ import {
   UseGuards,
   HttpStatus,
 } from '@nestjs/common';
+import Stripe from 'stripe';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { CreateCustomerPipe, UpdateCustomerPipe } from './customers.pipe';
+import {
+  CreateCustomerPipe,
+  UpdateCardPipe,
+  UpdateCustomerPipe,
+} from './customers.pipe';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current.user.decorator';
 import { UserDocument } from '../users/entities/user.entity';
@@ -81,22 +86,55 @@ export class CustomersController {
     );
     await this.customersService.updateDefaultSource(
       user.profile.customer,
-      card,
+      card.id,
     );
     return {
-      data: {
-        statusCode: HttpStatus.CREATED,
-        paymentMethod: card,
-      },
+      statusCode: HttpStatus.CREATED,
+      paymentMethod: card,
     };
   }
 
-  @Delete(':id/payment-methods/card')
-  async deleteCustomerCard(
-    @Param('id') id: string,
-    @Param('source') source: string,
+  @Patch('payment-methods/:cardId')
+  async updatePaymentMethod(
+    @Param('cardId') cardId: string,
+    @CurrentUser() user: UserDocument,
+    @Body(UpdateCardPipe) data: Stripe.CustomerSourceUpdateParams,
   ) {
-    const customer = await this.customersService.deleteCustomerCard(id, source);
+    const card = await this.customersService.updatePaymentMethod(
+      user.profile.customer,
+      cardId,
+      data,
+    );
+    return {
+      statusCode: HttpStatus.OK,
+      paymentMethod: card,
+    };
+  }
+
+  @Patch('payment-methods/source/:cardId')
+  async updateDefaultSource(
+    @Param('cardId') cardId: string,
+    @CurrentUser() user: UserDocument,
+  ) {
+    const card = await this.customersService.updateDefaultSource(
+      user.profile.customer,
+      cardId,
+    );
+    return {
+      statusCode: HttpStatus.OK,
+      paymentMethod: card,
+    };
+  }
+
+  @Delete('payment-methods/:source')
+  async deleteCustomerCard(
+    @Param('source') source: string,
+    @CurrentUser() user: UserDocument,
+  ) {
+    const customer = await this.customersService.deleteCustomerCard(
+      user.profile.customer,
+      source,
+    );
     return {
       statusCode: HttpStatus.OK,
       customer,
