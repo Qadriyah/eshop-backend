@@ -73,10 +73,10 @@ export class ProfileController {
       });
     }
     const profile = await this.profileService.update(id, updateProfileDto);
-    await this.customerService.updateCustomer(
-      profile.customer,
-      updateProfileDto,
-    );
+    await this.customerService.updateCustomer(profile.customer, {
+      name: `${updateProfileDto.lastName} ${updateProfileDto.firstName}`,
+      phone: updateProfileDto.phone,
+    });
     return {
       statusCode: HttpStatus.OK,
       profile,

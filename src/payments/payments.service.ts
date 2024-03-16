@@ -26,7 +26,10 @@ export class PaymentsService {
     this.stripe = new Stripe(configService.get('STRIPE_SECRET_KEY'));
   }
 
-  async createCheckoutSession(checkoutSessionDto: CheckoutSessionDto) {
+  async createCheckoutSession(
+    checkoutSessionDto: CheckoutSessionDto,
+    customerId: string,
+  ) {
     try {
       const lineItems = [];
       const domain = this.configService.get('REDIRECT_FRONTEND_URL');
@@ -47,6 +50,19 @@ export class PaymentsService {
           });
         }
       }
+
+      let customerInfo: any = {
+        customer_email: checkoutSessionDto.email,
+      };
+      if (customerId) {
+        customerInfo = {
+          customer: customerId,
+          customer_update: {
+            shipping: 'auto',
+          },
+        };
+      }
+
       const session = await this.stripe.checkout.sessions.create({
         mode: 'payment',
         success_url: `${domain}/checkout/success?success=true`,
@@ -98,8 +114,7 @@ export class PaymentsService {
             },
           },
         ],
-        customer_email: checkoutSessionDto.email,
-        customer: '',
+        ...customerInfo,
       });
       return { session, lineItems };
     } catch (err) {

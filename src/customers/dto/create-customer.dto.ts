@@ -16,6 +16,7 @@ export class UpdateCardDto {
   address_line2?: string;
   address_state?: string;
   address_zip?: string;
+  name?: string;
 }
 
 export type PaymentMethodType = {
@@ -62,6 +63,7 @@ export const UpdateCardSchema = Joi.object({
   address_line2: Joi.string().optional(),
   address_state: Joi.string().optional(),
   address_zip: Joi.string().optional(),
+  name: Joi.string().optional(),
 }).options({
   abortEarly: false,
 });
