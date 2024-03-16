@@ -32,7 +32,10 @@ export class PaymentsController {
     @CurrentUser() user: UserDocument,
   ): Promise<PaymentResponse> {
     const { session, lineItems } =
-      await this.paymentsService.createCheckoutSession(checkoutSessionDto);
+      await this.paymentsService.createCheckoutSession(
+        checkoutSessionDto,
+        user.profile.customer,
+      );
     await this.orderService.create({
       user: user.id,
       session: session.id,
