@@ -91,6 +91,7 @@ export class CustomersController {
     return {
       statusCode: HttpStatus.CREATED,
       paymentMethod: card,
+      message: 'Payment method has been created successfully',
     };
   }
 
@@ -108,6 +109,7 @@ export class CustomersController {
     return {
       statusCode: HttpStatus.OK,
       paymentMethod: card,
+      message: 'Payment method has been updated successfully',
     };
   }
 
@@ -123,6 +125,7 @@ export class CustomersController {
     return {
       statusCode: HttpStatus.OK,
       paymentMethod: card,
+      message: 'Default payment method has been updated successfully',
     };
   }
 
@@ -138,6 +141,7 @@ export class CustomersController {
     return {
       statusCode: HttpStatus.OK,
       customer,
+      message: 'Payment method has been removed successfully',
     };
   }
 }
