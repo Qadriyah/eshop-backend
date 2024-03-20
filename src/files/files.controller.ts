@@ -8,6 +8,8 @@ import {
   StreamableFile,
   UseGuards,
   HttpStatus,
+  Delete,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
@@ -24,12 +26,12 @@ export class FilesController {
   @UseInterceptors(FileInterceptor('image'))
   async uploadProductImage(
     @Param('productId') productId: string,
-    @UploadedFile(ImageTransformPipe) imageUrl: string,
+    @UploadedFile(ImageTransformPipe) filePath: string,
   ): Promise<FileResponse> {
-    await this.filesService.uploadProductImage(imageUrl, productId);
+    await this.filesService.uploadProductImage(filePath, productId);
     return {
       statusCode: HttpStatus.OK,
-      imageUrl,
+      filePath,
     };
   }
 
@@ -38,12 +40,12 @@ export class FilesController {
   @UseInterceptors(FileInterceptor('image'))
   async uploadProductIcon(
     @Param('productId') productId: string,
-    @UploadedFile(ImageTransformPipe) imageUrl: string,
+    @UploadedFile(ImageTransformPipe) filePath: string,
   ): Promise<FileResponse> {
-    await this.filesService.uploadProductIcon(imageUrl, productId);
+    await this.filesService.uploadProductIcon(filePath, productId);
     return {
       statusCode: HttpStatus.OK,
-      imageUrl,
+      filePath,
     };
   }
 
@@ -52,12 +54,25 @@ export class FilesController {
   @UseInterceptors(FileInterceptor('image'))
   async uploadProfileImage(
     @Param('userId') userId: string,
-    @UploadedFile(ImageTransformPipe) imageUrl: string,
+    @UploadedFile(ImageTransformPipe) filePath: string,
   ): Promise<FileResponse> {
-    await this.filesService.uploadProfileImage(imageUrl, userId);
+    await this.filesService.uploadProfileImage(filePath, userId);
     return {
       statusCode: HttpStatus.OK,
-      imageUrl,
+      filePath,
+    };
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('upload/:productId')
+  async deleteProductImage(
+    @Param('productId') productId: string,
+    @Query('file-path') filePath: string,
+  ): Promise<FileResponse> {
+    await this.filesService.deleteProductImage(productId, filePath);
+    return {
+      statusCode: HttpStatus.OK,
+      filePath,
     };
   }
 
