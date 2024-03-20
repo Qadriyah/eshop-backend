@@ -5,10 +5,11 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { createReadStream } from 'fs';
+import { ReadStream, createReadStream } from 'fs';
 import { join } from 'path';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { ProductRepository } from '../product/product.repository';
-import { ConfigService } from '@nestjs/config';
 import { UserRepository } from '../users/users.repository';
 
 @Injectable()
@@ -17,10 +18,12 @@ export class FilesService {
   constructor(
     private readonly productRepo: ProductRepository,
     private readonly userRepository: UserRepository,
-    private readonly configService: ConfigService,
   ) {}
 
-  async uploadProductImage(imageUrl: string, productId: string) {
+  async uploadProductImage(
+    imageUrl: string,
+    productId: string,
+  ): Promise<string> {
     try {
       const product = await this.productRepo.findOne({ _id: productId });
       if (!product) {
@@ -57,7 +60,10 @@ export class FilesService {
     }
   }
 
-  async uploadProductIcon(imageUrl: string, productId: string) {
+  async uploadProductIcon(
+    imageUrl: string,
+    productId: string,
+  ): Promise<string> {
     try {
       const product = await this.productRepo.findOne({ _id: productId });
       if (!product) {
@@ -94,7 +100,7 @@ export class FilesService {
     }
   }
 
-  async uploadProfileImage(imageUrl: string, userId: string) {
+  async uploadProfileImage(imageUrl: string, userId: string): Promise<string> {
     try {
       const user = await this.userRepository.findOne({ _id: userId });
       if (!user) {
@@ -131,7 +137,69 @@ export class FilesService {
     }
   }
 
-  async downloadImage(filename: string): Promise<any> {
+  async deleteProductImage(
+    productId: string,
+    filePath: string,
+  ): Promise<string> {
+    try {
+      const product = await this.productRepo.findOne({ _id: productId });
+      if (!product) {
+        throw new NotFoundException({
+          statusCode: HttpStatus.NOT_FOUND,
+          errors: [
+            {
+              field: 'name',
+              message: 'Product not found',
+            },
+          ],
+        });
+      }
+      await this.productRepo.findOneAndUpdate(
+        { _id: product.id },
+        { images: product.images.filter((image) => image !== filePath) },
+      );
+      await this.deleteFileFromServer(filePath);
+      return filePath;
+    } catch (err) {
+      this.logger.error('files.service.deleteProductImage', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'image',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async deleteFileFromServer(url: string): Promise<void> {
+    try {
+      const filename = url.substring(url.lastIndexOf('/') + 1);
+      const filePath = path.resolve(process.cwd(), 'uploads', `${filename}`);
+      await fs.unlink(filePath);
+    } catch (err) {
+      this.logger.error('files.service.deleteFileFromServer', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'image',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async downloadImage(filename: string): Promise<ReadStream> {
     try {
       const file = createReadStream(join(process.cwd(), 'uploads', filename));
       return file;

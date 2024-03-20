@@ -1,44 +1,30 @@
 import * as Joi from 'joi';
-import { PickType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/mapped-types';
 import { DISCOUNT_TYPES, PRODUCT_STATUS } from '@app/common/constants';
 import { CreateProductDto } from './create-product.dto';
 
-export class UpdateProductDto extends PickType(CreateProductDto, [
-  'sku',
-  'name',
-  'status',
-  'icon',
-  'images',
-  'description',
-  'price',
-  'discountType',
-  'percentDiscount',
-  'fixedDiscount',
-  'quantity',
-  'stock',
-  'allowBackorders',
-  'weight',
-  'length',
-  'width',
-  'height',
-] as const) {}
+export class UpdateProductDto extends PartialType(CreateProductDto) {}
 
 export const UpdateProductSchema = Joi.object({
-  sku: Joi.string(),
-  name: Joi.string(),
-  status: Joi.string().valid(...Object.values(PRODUCT_STATUS)),
-  icon: Joi.string(),
-  images: Joi.array().items(Joi.string().uri()),
-  description: Joi.string(),
-  price: Joi.number(),
-  discountType: Joi.string().valid(...Object.values(DISCOUNT_TYPES)),
-  quantity: Joi.number(),
-  stock: Joi.number(),
-  allowBackorders: Joi.boolean(),
-  weight: Joi.number(),
-  length: Joi.number(),
-  width: Joi.number(),
-  height: Joi.number(),
+  sku: Joi.string().optional(),
+  name: Joi.string().optional(),
+  status: Joi.string()
+    .valid(...Object.values(PRODUCT_STATUS))
+    .optional(),
+  icon: Joi.string().uri().optional(),
+  images: Joi.array().items(Joi.string().uri()).optional(),
+  description: Joi.string().optional(),
+  price: Joi.number().optional(),
+  discountType: Joi.string()
+    .valid(...Object.values(DISCOUNT_TYPES))
+    .optional(),
+  quantity: Joi.number().optional(),
+  stock: Joi.number().optional(),
+  allowBackorders: Joi.boolean().optional(),
+  weight: Joi.number().optional(),
+  length: Joi.number().optional(),
+  width: Joi.number().optional(),
+  height: Joi.number().optional(),
   percentDiscount: Joi.alternatives().conditional('discountType', {
     is: DISCOUNT_TYPES.percentage,
     then: Joi.number().required(),
