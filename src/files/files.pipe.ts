@@ -4,11 +4,14 @@ import {
   Injectable,
   PipeTransform,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import * as sharp from 'sharp';
 
 @Injectable()
 export class ImageTransformPipe implements PipeTransform {
+  constructor(private readonly configService: ConfigService) {}
+
   async transform(file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException({
@@ -39,6 +42,10 @@ export class ImageTransformPipe implements PipeTransform {
       .webp({ quality: 20 })
       .toFile(path.join('uploads', filename));
 
-    return filename;
+    const imageLocation = `${this.configService.get(
+      'BASE_URL',
+    )}/files/download/${filename}`;
+
+    return imageLocation;
   }
 }
