@@ -20,7 +20,7 @@ export class FilesService {
     private readonly configService: ConfigService,
   ) {}
 
-  async uploadProductImage(filename: string, productId: string) {
+  async uploadProductImage(imageUrl: string, productId: string) {
     try {
       const product = await this.productRepo.findOne({ _id: productId });
       if (!product) {
@@ -34,15 +34,12 @@ export class FilesService {
           ],
         });
       }
-      const imageLocation = `${this.configService.get(
-        'BASE_URL',
-      )}/files/download/${filename}`;
 
       await this.productRepo.findOneAndUpdate(
         { _id: productId },
-        { images: [...product.images, imageLocation] },
+        { images: [...product.images, imageUrl] },
       );
-      return filename;
+      return imageUrl;
     } catch (err) {
       this.logger.error('files.service.uploadProductImage', err);
       if (err.status !== 500) {
@@ -60,7 +57,7 @@ export class FilesService {
     }
   }
 
-  async uploadProductIcon(filename: string, productId: string) {
+  async uploadProductIcon(imageUrl: string, productId: string) {
     try {
       const product = await this.productRepo.findOne({ _id: productId });
       if (!product) {
@@ -74,15 +71,12 @@ export class FilesService {
           ],
         });
       }
-      const imageLocation = `${this.configService.get(
-        'BASE_URL',
-      )}/files/download/${filename}`;
 
       await this.productRepo.findOneAndUpdate(
         { _id: productId },
-        { images: [...product.images, imageLocation] },
+        { icon: imageUrl },
       );
-      return filename;
+      return imageUrl;
     } catch (err) {
       this.logger.error('files.service.uploadProductIcon', err);
       if (err.status !== 500) {
@@ -100,7 +94,7 @@ export class FilesService {
     }
   }
 
-  async uploadProfileImage(filename: string, userId: string) {
+  async uploadProfileImage(imageUrl: string, userId: string) {
     try {
       const user = await this.userRepository.findOne({ _id: userId });
       if (!user) {
@@ -114,15 +108,12 @@ export class FilesService {
           ],
         });
       }
-      const imageLocation = `${this.configService.get(
-        'BASE_URL',
-      )}/files/download/${filename}`;
 
       await this.userRepository.findOneAndUpdate(
         { _id: userId },
-        { avator: imageLocation },
+        { avator: imageUrl },
       );
-      return filename;
+      return imageUrl;
     } catch (err) {
       this.logger.error('files.service.uploadProfileImage', err);
       if (err.status !== 500) {

@@ -24,12 +24,12 @@ export class FilesController {
   @UseInterceptors(FileInterceptor('image'))
   async uploadProductImage(
     @Param('productId') productId: string,
-    @UploadedFile(ImageTransformPipe) filename: string,
+    @UploadedFile(ImageTransformPipe) imageUrl: string,
   ): Promise<FileResponse> {
-    await this.filesService.uploadProductImage(filename, productId);
+    await this.filesService.uploadProductImage(imageUrl, productId);
     return {
       statusCode: HttpStatus.OK,
-      filename,
+      imageUrl,
     };
   }
 
@@ -38,12 +38,12 @@ export class FilesController {
   @UseInterceptors(FileInterceptor('image'))
   async uploadProductIcon(
     @Param('productId') productId: string,
-    @UploadedFile(ImageTransformPipe) filename: string,
+    @UploadedFile(ImageTransformPipe) imageUrl: string,
   ): Promise<FileResponse> {
-    await this.filesService.uploadProductIcon(filename, productId);
+    await this.filesService.uploadProductIcon(imageUrl, productId);
     return {
       statusCode: HttpStatus.OK,
-      filename,
+      imageUrl,
     };
   }
 
@@ -52,12 +52,12 @@ export class FilesController {
   @UseInterceptors(FileInterceptor('image'))
   async uploadProfileImage(
     @Param('userId') userId: string,
-    @UploadedFile(ImageTransformPipe) filename: string,
+    @UploadedFile(ImageTransformPipe) imageUrl: string,
   ): Promise<FileResponse> {
-    await this.filesService.uploadProfileImage(filename, userId);
+    await this.filesService.uploadProfileImage(imageUrl, userId);
     return {
       statusCode: HttpStatus.OK,
-      filename,
+      imageUrl,
     };
   }
 
