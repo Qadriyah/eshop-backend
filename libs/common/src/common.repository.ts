@@ -38,10 +38,7 @@ export abstract class AbstractRepository<TDocument> {
     return document;
   }
 
-  find(
-    filterQuery: FilterQuery<TDocument>,
-    options?: QueryOptions,
-  ): Promise<TDocument[]> {
+  find(filterQuery: FilterQuery<TDocument>, options?: QueryOptions) {
     const documents = this.model.find(filterQuery, {
       ...options,
     });
