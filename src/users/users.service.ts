@@ -13,6 +13,8 @@ import { UserRepository } from './users.repository';
 import { UserDocument } from './entities/user.entity';
 import { ProfileRepository } from '../profile/profile.repository';
 import { ProfileDocument } from '../profile/entities/profile.entity';
+import { USER_TYPES } from '@app/common';
+import { FilterQuery } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -69,11 +71,16 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<UserDocument[]> {
+  async findAll(userType?: string): Promise<UserDocument[]> {
     try {
-      return await this.userRepository
-        .find({ deleted: false })
+      const query: FilterQuery<UserDocument> = { deleted: false };
+      if (userType) {
+        query.roles = USER_TYPES[userType.toLocaleLowerCase()];
+      }
+      const users = await this.userRepository
+        .find(query)
         .populate([{ path: 'profile' }]);
+      return users;
     } catch (err) {
       this.logger.error('user.service.findAll', err);
       if (err.status !== 500) {
@@ -93,9 +100,10 @@ export class UsersService {
 
   async findOne(id: string): Promise<UserDocument> {
     try {
-      return await this.userRepository
+      const user = await this.userRepository
         .findOne({ _id: id })
         .populate([{ path: 'profile' }]);
+      return user;
     } catch (err) {
       this.logger.error('user.service.findOne', err);
       if (err.status !== 500) {
@@ -118,10 +126,11 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
   ): Promise<UserDocument> {
     try {
-      return await this.userRepository.findOneAndUpdate(
+      const user = await this.userRepository.findOneAndUpdate(
         { _id: id },
         updateUserDto,
       );
+      return user;
     } catch (err) {
       this.logger.error('user.service.update', err);
       if (err.status !== 500) {
@@ -141,10 +150,11 @@ export class UsersService {
 
   async remove(id: string): Promise<UserDocument> {
     try {
-      return await this.userRepository.findOneAndUpdate(
+      const user = await this.userRepository.findOneAndUpdate(
         { _id: id },
         { deleted: true },
       );
+      return user;
     } catch (err) {
       this.logger.error('user.service.remove', err);
       if (err.status !== 500) {

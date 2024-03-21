@@ -6,6 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  HttpStatus,
+  UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UserResponse } from './dto/create-user.dto';
@@ -15,7 +18,9 @@ import {
   UpdateUserValidationPipe,
 } from './users.pipe';
 import { UserDocument } from './entities/user.entity';
+import { AuthGuard } from '../auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -36,25 +41,43 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  async findAll(@Query('user') user: string) {
+    const users = await this.usersService.findAll(user);
+    return {
+      statusCode: HttpStatus.OK,
+      users,
+    };
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<UserDocument> {
-    return await this.usersService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const user = await this.usersService.findOne(id);
+    return {
+      statusCode: HttpStatus.OK,
+      user,
+    };
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body(UpdateUserValidationPipe) updateUserDto: UpdateUserDto,
   ) {
-    return this.usersService.update(id, updateUserDto);
+    const user = await this.usersService.update(id, updateUserDto);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'User has been updated successfully',
+      user,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  async remove(@Param('id') id: string) {
+    const user = await this.usersService.remove(id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'User has been deleted successfully',
+      user,
+    };
   }
 }
