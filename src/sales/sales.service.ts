@@ -61,7 +61,13 @@ export class SalesService {
 
   async findAll(): Promise<SaleDocument[]> {
     try {
-      const sales = await this.salesRepository.find({});
+      const sales = await this.salesRepository.find({}).populate([
+        {
+          path: 'user',
+          select: 'email avator roles',
+          populate: [{ path: 'profile' }],
+        },
+      ]);
       return sales;
     } catch (err) {
       this.logger.error('sales.service.findAll', err);

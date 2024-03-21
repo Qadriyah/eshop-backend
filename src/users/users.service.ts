@@ -71,7 +71,9 @@ export class UsersService {
 
   async findAll(): Promise<UserDocument[]> {
     try {
-      return await this.userRepository.find({ deleted: false });
+      return await this.userRepository
+        .find({ deleted: false })
+        .populate([{ path: 'profile' }]);
     } catch (err) {
       this.logger.error('user.service.findAll', err);
       if (err.status !== 500) {
@@ -91,7 +93,9 @@ export class UsersService {
 
   async findOne(id: string): Promise<UserDocument> {
     try {
-      return await this.userRepository.findOne({ _id: id });
+      return await this.userRepository
+        .findOne({ _id: id })
+        .populate([{ path: 'profile' }]);
     } catch (err) {
       this.logger.error('user.service.findOne', err);
       if (err.status !== 500) {
