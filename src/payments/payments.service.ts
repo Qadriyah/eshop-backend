@@ -149,7 +149,7 @@ export class PaymentsService {
           break;
         case 'checkout.session.completed':
           const checkouSessionSucceeded = event.data.object;
-          this.updateSaleStatus(checkouSessionSucceeded);
+          this.updateSale(checkouSessionSucceeded);
           break;
         default:
           console.log(`Unhandled event type ${event.type}`);
@@ -250,9 +250,7 @@ export class PaymentsService {
     }
   }
 
-  private async updateSaleStatus(
-    session: Stripe.Checkout.Session,
-  ): Promise<void> {
+  private async updateSale(session: Stripe.Checkout.Session): Promise<void> {
     try {
       const order = await this.orderService.findBySession(session.id);
       if (!order) {
@@ -266,9 +264,23 @@ export class PaymentsService {
           ],
         });
       }
-
       await this.orderService.update(order.id, {
         status: SALE_STATUS.completed as SaleStatusType,
+        orderNumber: await this.orderService.generateOrderNumber(),
+        shippingAddress: session?.shipping_details?.address,
+        billingAddress: session?.customer_details?.address,
+        customer: {
+          name: session?.customer_details?.name,
+          email: session?.customer_details?.email,
+          phone: session?.customer_details?.phone,
+        },
+        totalAmount: session.amount_total / 100,
+        shipping: session?.shipping_cost?.amount_total
+          ? session.shipping_cost.amount_total / 100
+          : 0,
+        tax: session?.total_details?.amount_tax
+          ? session.total_details.amount_tax / 100
+          : 0,
       });
     } catch (err) {
       this.logger.error('payments.service.updateSaleStatus', err);

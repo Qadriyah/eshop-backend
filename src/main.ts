@@ -10,7 +10,10 @@ import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { LoggerService } from './logger/logger.service';
 
-export const whitelistOrigins = ['http://localhost:3000'];
+export const whitelistOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3002',
+];
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

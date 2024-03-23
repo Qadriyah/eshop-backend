@@ -24,13 +24,13 @@ import { CommonService } from '@app/common';
         name: Sale.name,
         useFactory: function () {
           const schema = SaleSchema;
-          schema.virtual('totalAmount').get(function () {
-            const totalAmount = this.lineItems?.reduce(
-              (total, item) => (total += item.quantity * item.price),
-              0,
-            );
-            return totalAmount;
-          });
+          // schema.virtual('totalAmount').get(function () {
+          //   const totalAmount = this.lineItems?.reduce(
+          //     (total, item) => (total += item.quantity * item.price),
+          //     0,
+          //   );
+          //   return totalAmount;
+          // });
           return schema;
         },
       },

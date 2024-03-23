@@ -20,6 +20,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { MessagesModule } from './messages/messages.module';
 import { EmailsModule } from './emails/emails.module';
 import { FilesModule } from './files/files.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { FilesModule } from './files/files.module';
     MessagesModule,
     EmailsModule,
     FilesModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
