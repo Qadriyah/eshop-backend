@@ -154,4 +154,33 @@ export class SalesService {
       });
     }
   }
+
+  public async generateOrderNumber(): Promise<number> {
+    try {
+      const min = 1000;
+      const max = 999999;
+      const randomNumber = Math.floor(Math.random() * (max - min + 1) + min);
+      const order = await this.salesRepository.findOne({
+        orderNumber: randomNumber,
+      });
+      if (order) {
+        return this.generateOrderNumber();
+      }
+      return randomNumber;
+    } catch (err) {
+      this.logger.error('sale.service.generateOrderNumber', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'payment',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
 }

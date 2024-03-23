@@ -27,10 +27,10 @@ export type SaleItemType = {
 
 export class AddressType {
   @Prop()
-  addressLine1: string;
+  line1: string;
 
   @Prop()
-  addressLine2: string;
+  line2: string;
 
   @Prop()
   city: string;
@@ -39,13 +39,16 @@ export class AddressType {
   state: string;
 
   @Prop()
-  zipcode: string;
+  postal_code: string;
 
   @Prop()
   country: string;
+}
 
-  @Prop()
+export class CustomerType {
   name: string;
+  email: string;
+  phone: string;
 }
 
 @Schema({
@@ -78,7 +81,25 @@ export class Sale {
   status: SaleStatusType;
 
   @Prop()
-  orderNumber: string;
+  orderNumber: number;
+
+  @Prop()
+  shippingAddress: AddressType;
+
+  @Prop()
+  billingAddress: AddressType;
+
+  @Prop()
+  customer: CustomerType;
+
+  @Prop()
+  totalAmount: number;
+
+  @Prop()
+  shipping: number;
+
+  @Prop()
+  tax: number;
 }
 
 export const SaleSchema = SchemaFactory.createForClass(Sale);
