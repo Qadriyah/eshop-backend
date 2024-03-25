@@ -265,7 +265,7 @@ export class PaymentsService {
         });
       }
       await this.orderService.update(order.id, {
-        status: SALE_STATUS.completed as SaleStatusType,
+        status: SALE_STATUS.processing as SaleStatusType,
         orderNumber: await this.orderService.generateOrderNumber(),
         shippingAddress: session?.shipping_details?.address,
         billingAddress: session?.customer_details?.address,
@@ -275,8 +275,8 @@ export class PaymentsService {
           phone: session?.customer_details?.phone,
         },
         totalAmount: session.amount_total / 100,
-        shipping: session?.shipping_cost?.amount_total
-          ? session.shipping_cost.amount_total / 100
+        shipping: session?.total_details?.amount_shipping
+          ? session.total_details.amount_shipping / 100
           : 0,
         tax: session?.total_details?.amount_tax
           ? session.total_details.amount_tax / 100

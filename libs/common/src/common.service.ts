@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ValidationError } from 'joi';
+import * as moment from 'moment';
 import { Types } from 'mongoose';
 
 type FieldError = {
@@ -63,5 +64,15 @@ export class CommonService {
       flatRate: 27.6,
     };
     return rates[method];
+  }
+
+  resetTime(date: string): string {
+    if (!date) {
+      return '';
+    }
+    return moment(date)
+      .utcOffset(0)
+      .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+      .toISOString();
   }
 }

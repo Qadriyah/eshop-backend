@@ -21,6 +21,8 @@ import { MessagesModule } from './messages/messages.module';
 import { EmailsModule } from './emails/emails.module';
 import { FilesModule } from './files/files.module';
 import { ReportsModule } from './reports/reports.module';
+import { CaslModule } from './casl/casl.module';
+import { RbacModule } from './rbac/rbac.module';
 
 @Module({
   imports: [
@@ -75,6 +77,8 @@ import { ReportsModule } from './reports/reports.module';
     EmailsModule,
     FilesModule,
     ReportsModule,
+    CaslModule,
+    RbacModule,
   ],
   controllers: [AppController],
   providers: [AppService],

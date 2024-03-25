@@ -3,7 +3,10 @@ import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { UserDocument } from '../../users/entities/user.entity';
 import { SALE_STATUS } from '@app/common/constants';
 
-export type SaleDocument = HydratedDocument<Sale>;
+export type SaleDocument = HydratedDocument<Sale> & {
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type SaleStatusType =
   | 'Pending'
@@ -100,6 +103,9 @@ export class Sale {
 
   @Prop()
   tax: number;
+
+  @Prop({ default: false })
+  refunded: boolean;
 }
 
 export const SaleSchema = SchemaFactory.createForClass(Sale);
