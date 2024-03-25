@@ -2,7 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { User } from '../../users/entities/user.entity';
 
-export type ProfileDocument = HydratedDocument<Profile>;
+export type ProfileDocument = HydratedDocument<Profile> & {
+  fullName: string;
+};
 
 @Schema({
   timestamps: true,

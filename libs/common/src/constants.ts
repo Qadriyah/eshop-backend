@@ -33,7 +33,7 @@ export const SALE_STATUS = {
   delivering: 'Delivering',
   delivered: 'Delivered',
   cancelled: 'Cancelled',
-  refunded: 'Refunded',
+  returned: 'Returned',
 };
 
 export const MSG_STATUS = {

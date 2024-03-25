@@ -52,7 +52,7 @@ export class PaymentsController {
     };
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Get('checkout/session/:id')
   async getCheckoutSession(
     @Param('id') sessionId: string,
