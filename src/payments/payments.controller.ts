@@ -39,12 +39,7 @@ export class PaymentsController {
     await this.orderService.create({
       user: user.id,
       session: session.id,
-      lineItems: lineItems.map((item) => ({
-        name: item.price_data.product_data.name,
-        price: item.price_data.unit_amount / 100,
-        quantity: item.quantity,
-        icon: item.price_data.product_data.images[0],
-      })),
+      lineItems,
     });
     return {
       statusCode: HttpStatus.OK,
@@ -52,7 +47,7 @@ export class PaymentsController {
     };
   }
 
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @Get('checkout/session/:id')
   async getCheckoutSession(
     @Param('id') sessionId: string,

@@ -32,10 +32,18 @@ export class PaymentsService {
   ) {
     try {
       const lineItems = [];
+      const temp = [];
       const domain = this.configService.get('REDIRECT_FRONTEND_URL');
       for (const item of checkoutSessionDto.lineItems) {
         const product = await this.productRepository.findOne({ _id: item.id });
         if (product) {
+          temp.push({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: item.quantity,
+            icon: product.icon,
+          });
           lineItems.push({
             price_data: {
               currency: 'usd',
@@ -116,7 +124,7 @@ export class PaymentsService {
         ],
         ...customerInfo,
       });
-      return { session, lineItems };
+      return { session, lineItems: temp };
     } catch (err) {
       this.logger.error('payments.service.checkoutSession', err);
       if (err.status !== 500) {

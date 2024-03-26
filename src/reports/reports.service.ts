@@ -34,6 +34,12 @@ type CustomerReportItem = {
   products: number;
   total: number;
 };
+type ProductReportItem = {
+  key: string;
+  name: string;
+  sold: number;
+  total: number;
+};
 
 @Injectable()
 export class ReportsService {
@@ -140,7 +146,7 @@ export class ReportsService {
       ]);
       const map: Record<string, CustomerReportItem> = {};
       orders.forEach((order: SaleDocument) => {
-        const key = String(order.user);
+        const key = String(order.user.id);
         const products = order.lineItems.reduce(
           (total, item) => total + item.quantity,
           0,
@@ -165,6 +171,44 @@ export class ReportsService {
       return Object.values(map);
     } catch (err) {
       this.logger.error('reports.service.getCustomerOrders', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'report',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async getProductsRepoprt(query: FilterQuery<SaleDocument>) {
+    try {
+      const orders = await this.ordersRepository.find(query);
+      const map: Record<string, ProductReportItem> = {};
+      orders.forEach((order: SaleDocument) => {
+        order.lineItems.forEach((item) => {
+          const key = String(item.id);
+          if (map[key]) {
+            map[key].sold = map[key].sold + item.quantity;
+            map[key].total = map[key].total + item.quantity * item.price;
+          } else {
+            map[key] = {
+              key,
+              name: item.name,
+              sold: item.quantity,
+              total: item.quantity * item.price,
+            };
+          }
+        });
+      });
+      return Object.values(map);
+    } catch (err) {
+      this.logger.error('reports.service.getProductsRepoprt', err);
       if (err.status !== 500) {
         throw err;
       }

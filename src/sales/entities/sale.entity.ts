@@ -18,6 +18,7 @@ export type SaleStatusType =
   | 'Refunded';
 
 export type SaleItemType = {
+  id: string;
   name: string;
   price: number;
   quantity: number;
