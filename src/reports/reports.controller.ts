@@ -92,4 +92,31 @@ export class ReportsController {
       report,
     };
   }
+
+  @Get('product-report')
+  async getProductsRepoprt(
+    @Query('start-date') from: string,
+    @Query('end-date') to: string,
+  ) {
+    const query: FilterQuery<SaleDocument> = {
+      status: {
+        $nin: [
+          SALE_STATUS.cancelled,
+          SALE_STATUS.pending,
+          SALE_STATUS.returned,
+        ],
+      },
+      createdAt: {
+        $gte: this.commonService.resetTime(from),
+        $lte: to
+          ? moment(to).add(23, 'hours').toISOString()
+          : moment(from).add(23, 'hours').toISOString(),
+      },
+    };
+    const report = await this.reportsService.getProductsRepoprt(query);
+    return {
+      statusCode: HttpStatus.OK,
+      report,
+    };
+  }
 }
