@@ -2,6 +2,7 @@ import { Schema } from 'mongoose';
 export interface GetGoogleAuth {
   accessToken: string;
   refreshToken: string;
+  sessionToken: string;
   userId: Schema.Types.ObjectId;
   userInfo: {
     sub: string;
@@ -23,4 +24,5 @@ export interface CreateGuestAuth {
 export interface CreateNormalAuth {
   accessToken: string;
   refreshToken: string;
+  sessionToken: string;
 }

@@ -38,7 +38,7 @@ export class AuthGuard implements CanActivate {
       const response = context.switchToHttp().getResponse();
       response.cookie('authentication', '', { expires: new Date(0) });
       response.cookie('rtoken', '', { expires: new Date(0) });
-      response.cookie('islogin', '', { expires: new Date(0) });
+      response.cookie('_session-token', '', { expires: new Date(0) });
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         errors: [
@@ -84,7 +84,7 @@ export class AuthGuard implements CanActivate {
     if (!user) {
       response.cookie('authentication', '', { expires: new Date(0) });
       response.cookie('rtoken', '', { expires: new Date(0) });
-      response.cookie('islogin', '', { expires: new Date(0) });
+      response.cookie('_session-token', '', { expires: new Date(0) });
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         errors: [
@@ -102,6 +102,7 @@ export class AuthGuard implements CanActivate {
     });
     const accessToken = await this.jwtService.signAsync(payload);
     const rToken = randtoken.uid(256);
+    const sessionToken = randtoken.uid(25);
     user.refreshToken = rToken;
     await this.userRepository.findOneAndUpdate(
       { _id: user.id },
@@ -115,7 +116,7 @@ export class AuthGuard implements CanActivate {
     response.cookie('rtoken', rToken, {
       httpOnly: true,
     });
-    response.cookie('islogin', 'true');
+    response.cookie('_session-token', sessionToken);
     return true;
   }
 
@@ -135,7 +136,7 @@ export class AuthGuard implements CanActivate {
     if (!user) {
       response.cookie('authentication', '', { expires: new Date(0) });
       response.cookie('rtoken', '', { expires: new Date(0) });
-      response.cookie('islogin', '', { expires: new Date(0) });
+      response.cookie('_session-token', '', { expires: new Date(0) });
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         errors: [

@@ -34,16 +34,15 @@ export class AuthController {
     @Body(AuthPipe) createAuthDto: CreateAuthDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
-    const { accessToken, refreshToken } = await this.authService.create(
-      createAuthDto,
-    );
+    const { accessToken, refreshToken, sessionToken } =
+      await this.authService.create(createAuthDto);
     response.cookie('authentication', accessToken, {
       httpOnly: true,
     });
     response.cookie('rtoken', refreshToken, {
       httpOnly: true,
     });
-    response.cookie('islogin', 'true');
+    response.cookie('_session-token', sessionToken);
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
@@ -97,7 +96,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
     const { code } = request.query;
-    const { accessToken, refreshToken, userId, userInfo } =
+    const { accessToken, refreshToken, sessionToken, userId, userInfo } =
       await this.authService.getGoogleAuth(code as string);
 
     const customer = await this.customerService.createCustomer({
@@ -126,7 +125,7 @@ export class AuthController {
     response.cookie('rtoken', refreshToken, {
       httpOnly: true,
     });
-    response.cookie('islogin', 'true');
+    response.cookie('_session-token', sessionToken);
     response.redirect(this.configService.get('REDIRECT_FRONTEND_URL'));
     return {
       statusCode: HttpStatus.OK,
@@ -139,7 +138,7 @@ export class AuthController {
   ): Promise<AuthResponse> {
     response.cookie('authentication', '', { expires: new Date(0) });
     response.cookie('rtoken', '', { expires: new Date(0) });
-    response.cookie('islogin', 'false', { expires: new Date(0) });
+    response.cookie('_session-token', '', { expires: new Date(0) });
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
