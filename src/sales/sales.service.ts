@@ -88,7 +88,13 @@ export class SalesService {
 
   async findOne(id: string): Promise<SaleDocument> {
     try {
-      const sale = await this.salesRepository.findOne({ _id: id });
+      const sale = await this.salesRepository.findOne({ _id: id }).populate([
+        {
+          path: 'user',
+          select: 'email roles, avator',
+          populate: [{ path: 'profile' }],
+        },
+      ]);
       return sale;
     } catch (err) {
       this.logger.error('sales.service.findOne', err);
