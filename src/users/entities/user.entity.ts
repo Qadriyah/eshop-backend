@@ -37,7 +37,7 @@ export class User {
   @Prop({ default: false })
   deleted: boolean;
 
-  @Prop()
+  @Prop({ default: false })
   suspended: boolean;
 }
 
