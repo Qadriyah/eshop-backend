@@ -106,7 +106,7 @@ export class AuthService {
       return {
         accessToken,
         refreshToken,
-        sessionToken: randtoken.uid(25),
+        sessionToken: user.id,
       };
     } catch (err) {
       this.logger.error('auth.service.create', err);
@@ -201,7 +201,7 @@ export class AuthService {
         accessToken,
         refreshToken,
         userInfo,
-        sessionToken: randtoken.uid(25),
+        sessionToken: user.id,
       };
     } catch (err) {
       this.logger.error('auth.service.getAuth', err);

@@ -36,9 +36,11 @@ export class AuthGuard implements CanActivate {
         return await this.refreshToken(refreshToken, context);
       }
       const response = context.switchToHttp().getResponse();
-      response.cookie('authentication', '', { expires: new Date(0) });
-      response.cookie('rtoken', '', { expires: new Date(0) });
-      response.cookie('_session-token', '', { expires: new Date(0) });
+      response
+        .cookie('authentication', '', { expires: new Date(0) })
+        .cookie('rtoken', '', { expires: new Date(0) })
+        .cookie('_session-token', '', { expires: new Date(0) });
+
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         errors: [
@@ -82,9 +84,11 @@ export class AuthGuard implements CanActivate {
     });
 
     if (!user) {
-      response.cookie('authentication', '', { expires: new Date(0) });
-      response.cookie('rtoken', '', { expires: new Date(0) });
-      response.cookie('_session-token', '', { expires: new Date(0) });
+      response
+        .cookie('authentication', '', { expires: new Date(0) })
+        .cookie('rtoken', '', { expires: new Date(0) })
+        .cookie('_session-token', '', { expires: new Date(0) });
+
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         errors: [
@@ -102,7 +106,6 @@ export class AuthGuard implements CanActivate {
     });
     const accessToken = await this.jwtService.signAsync(payload);
     const rToken = randtoken.uid(256);
-    const sessionToken = randtoken.uid(25);
     user.refreshToken = rToken;
     await this.userRepository.findOneAndUpdate(
       { _id: user.id },
@@ -110,13 +113,15 @@ export class AuthGuard implements CanActivate {
     );
 
     request.user = user;
-    response.cookie('authentication', accessToken, {
-      httpOnly: true,
-    });
-    response.cookie('rtoken', rToken, {
-      httpOnly: true,
-    });
-    response.cookie('_session-token', sessionToken);
+    response
+      .cookie('authentication', accessToken, {
+        httpOnly: true,
+      })
+      .cookie('rtoken', rToken, {
+        httpOnly: true,
+      })
+      .cookie('_session-token', user.id);
+
     return true;
   }
 
@@ -134,9 +139,11 @@ export class AuthGuard implements CanActivate {
       .populate(['profile']);
 
     if (!user) {
-      response.cookie('authentication', '', { expires: new Date(0) });
-      response.cookie('rtoken', '', { expires: new Date(0) });
-      response.cookie('_session-token', '', { expires: new Date(0) });
+      response
+        .cookie('authentication', '', { expires: new Date(0) })
+        .cookie('rtoken', '', { expires: new Date(0) })
+        .cookie('_session-token', '', { expires: new Date(0) });
+
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         errors: [
