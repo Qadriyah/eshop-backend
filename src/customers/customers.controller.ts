@@ -21,8 +21,9 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current.user.decorator';
 import { UserDocument } from '../users/entities/user.entity';
+import { RbacRolesGuard } from 'src/rbac/rbac.roles.guard';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacRolesGuard)
 @Controller('customers')
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
@@ -65,9 +66,20 @@ export class CustomersController {
   }
 
   @Get('payment-methods/cards')
-  async getCustomerPaymentMethonds(@CurrentUser() user: UserDocument) {
+  async getMyPaymentMethonds(@CurrentUser() user: UserDocument) {
     const paymentMethods = await this.customersService.getPaymentMethonds(
       user.profile.customer,
+    );
+    return {
+      statusCode: HttpStatus.OK,
+      paymentMethods,
+    };
+  }
+
+  @Get('payment-methods/:customerId/cards')
+  async getCustomerPaymentMethonds(@Param('customerId') customerId: string) {
+    const paymentMethods = await this.customersService.getPaymentMethonds(
+      customerId,
     );
     return {
       statusCode: HttpStatus.OK,

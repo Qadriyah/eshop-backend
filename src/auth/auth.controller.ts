@@ -36,13 +36,15 @@ export class AuthController {
   ): Promise<AuthResponse> {
     const { accessToken, refreshToken, sessionToken } =
       await this.authService.create(createAuthDto);
-    response.cookie('authentication', accessToken, {
-      httpOnly: true,
-    });
-    response.cookie('rtoken', refreshToken, {
-      httpOnly: true,
-    });
-    response.cookie('_session-token', sessionToken);
+    response
+      .cookie('authentication', accessToken, {
+        httpOnly: true,
+      })
+      .cookie('rtoken', refreshToken, {
+        httpOnly: true,
+      })
+      .cookie('_session-token', sessionToken);
+
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
@@ -119,14 +121,16 @@ export class AuthController {
         customer: customer.id,
       });
     }
-    response.cookie('authentication', accessToken, {
-      httpOnly: true,
-    });
-    response.cookie('rtoken', refreshToken, {
-      httpOnly: true,
-    });
-    response.cookie('_session-token', sessionToken);
+    response
+      .cookie('authentication', accessToken, {
+        httpOnly: true,
+      })
+      .cookie('rtoken', refreshToken, {
+        httpOnly: true,
+      })
+      .cookie('_session-token', sessionToken);
     response.redirect(this.configService.get('REDIRECT_FRONTEND_URL'));
+
     return {
       statusCode: HttpStatus.OK,
     };
@@ -136,9 +140,11 @@ export class AuthController {
   async logoutUser(
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
-    response.cookie('authentication', '', { expires: new Date(0) });
-    response.cookie('rtoken', '', { expires: new Date(0) });
-    response.cookie('_session-token', '', { expires: new Date(0) });
+    response
+      .cookie('authentication', '', { expires: new Date(0) })
+      .cookie('rtoken', '', { expires: new Date(0) })
+      .cookie('_session-token', '', { expires: new Date(0) });
+
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
