@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { User } from '../../users/entities/user.entity';
 import { ADDRESS_TYPES } from '@app/common/constants';
+import mongoosePaginate from '@app/common/mongoosePaginate';
 
 export type AddressDocument = HydratedDocument<Address>;
 
@@ -50,3 +51,4 @@ export class Address {
 }
 
 export const AddressSchema = SchemaFactory.createForClass(Address);
+AddressSchema.plugin(mongoosePaginate);

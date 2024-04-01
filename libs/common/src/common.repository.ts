@@ -1,16 +1,10 @@
 import { HttpStatus, Logger, NotFoundException } from '@nestjs/common';
-import {
-  FilterQuery,
-  Model,
-  SaveOptions,
-  QueryOptions,
-  UpdateQuery,
-} from 'mongoose';
-
+import { PaginateModel, PaginateOptions } from 'mongoose';
+import { FilterQuery, SaveOptions, QueryOptions, UpdateQuery } from 'mongoose';
 export abstract class AbstractRepository<TDocument> {
   private readonly logger = new Logger(AbstractRepository.name);
 
-  constructor(protected readonly model: Model<TDocument>) {}
+  constructor(protected readonly model: PaginateModel<TDocument>) {}
 
   create(document: TDocument, options?: SaveOptions) {
     const doc = new this.model({
@@ -62,5 +56,13 @@ export abstract class AbstractRepository<TDocument> {
   findByIdAndDelete(id: string, options?: QueryOptions) {
     const document = this.model.findByIdAndDelete(id, { ...options });
     return document;
+  }
+
+  paginate(filterQuery: FilterQuery<TDocument>, options?: PaginateOptions) {
+    const documents = this.model.paginate(filterQuery, {
+      ...options,
+    });
+
+    return documents;
   }
 }

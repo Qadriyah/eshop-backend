@@ -8,6 +8,8 @@ import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { SalesRepository } from './sales.repository';
 import { SaleDocument } from './entities/sale.entity';
+import { FilterQuery, PaginateResult } from 'mongoose';
+import { PaginateOptions } from '@app/common';
 
 @Injectable()
 export class SalesService {
@@ -59,16 +61,23 @@ export class SalesService {
     }
   }
 
-  async findAll(): Promise<SaleDocument[]> {
+  async findAll(
+    query: FilterQuery<SaleDocument>,
+    options: PaginateOptions,
+  ): Promise<PaginateResult<SaleDocument>> {
     try {
-      const sales = await this.salesRepository.find({}).populate([
-        {
-          path: 'user',
-          select: 'email avator roles',
-          populate: [{ path: 'profile' }],
-        },
-      ]);
-      return sales;
+      const result = await this.salesRepository.paginate(query, {
+        ...options,
+        populate: [
+          {
+            path: 'user',
+            select: 'email avator roles',
+            populate: [{ path: 'profile' }],
+          },
+        ],
+        sort: '-createdAt',
+      });
+      return result;
     } catch (err) {
       this.logger.error('sales.service.findAll', err);
       if (err.status !== 500) {
@@ -140,10 +149,23 @@ export class SalesService {
     }
   }
 
-  async findCustomerSales(customerId: string): Promise<SaleDocument[]> {
+  async findCustomerSales(
+    query: FilterQuery<SaleDocument>,
+    options: PaginateOptions,
+  ): Promise<PaginateResult<SaleDocument>> {
     try {
-      const sales = await this.salesRepository.find({ user: customerId });
-      return sales;
+      const result = await this.salesRepository.paginate(query, {
+        ...options,
+        populate: [
+          {
+            path: 'user',
+            select: 'email avator roles',
+            populate: [{ path: 'profile' }],
+          },
+        ],
+        sort: '-createdAt',
+      });
+      return result;
     } catch (err) {
       this.logger.error('sales.service.getCustomerSales', err);
       if (err.status !== 500) {

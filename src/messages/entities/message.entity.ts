@@ -1,4 +1,5 @@
 import { MSG_STATUS } from '@app/common/constants';
+import mongoosePaginate from '@app/common/mongoosePaginate';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
@@ -33,3 +34,4 @@ export class Message {
 
 export type MessageDocument = HydratedDocument<Message>;
 export const MessageSchema = SchemaFactory.createForClass(Message);
+MessageSchema.plugin(mongoosePaginate);

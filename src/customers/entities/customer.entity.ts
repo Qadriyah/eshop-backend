@@ -1,3 +1,4 @@
+import mongoosePaginate from '@app/common/mongoosePaginate';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema({
@@ -24,3 +25,4 @@ export class Customer {
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(Customer);
+CustomerSchema.plugin(mongoosePaginate);

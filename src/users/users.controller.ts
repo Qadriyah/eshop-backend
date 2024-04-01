@@ -41,7 +41,7 @@ export class UsersController {
   }
 
   @Get()
-  async findAll(@Query('user') user: string) {
+  async findAll(@Query() { user }) {
     const users = await this.usersService.findAll(user);
     return {
       statusCode: HttpStatus.OK,

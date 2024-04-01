@@ -1,3 +1,4 @@
+import mongoosePaginate from '@app/common/mongoosePaginate';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
@@ -38,3 +39,4 @@ export class Email {
 
 export type EmailDocument = HydratedDocument<Email>;
 export const EmailSchema = SchemaFactory.createForClass(Email);
+EmailSchema.plugin(mongoosePaginate);
