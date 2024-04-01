@@ -1,4 +1,5 @@
 import { DISCOUNT_TYPES, PRODUCT_STATUS } from '@app/common/constants';
+import mongoosePaginate from '@app/common/mongoosePaginate';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
@@ -71,6 +72,7 @@ export class Product {
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
 
+ProductSchema.plugin(mongoosePaginate);
 ProductSchema.pre('save', function () {
   this.slug = slugify(this.name);
 });

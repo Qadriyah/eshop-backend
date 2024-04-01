@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { UserDocument } from '../../users/entities/user.entity';
 import { SALE_STATUS } from '@app/common/constants';
+import mongoosePaginate from '@app/common/mongoosePaginate';
 
 export type SaleDocument = HydratedDocument<Sale> & {
   createdAt: string;
@@ -99,10 +100,10 @@ export class Sale {
   @Prop()
   totalAmount: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   shipping: number;
 
-  @Prop()
+  @Prop({ default: 0 })
   tax: number;
 
   @Prop({ default: false })
@@ -110,3 +111,5 @@ export class Sale {
 }
 
 export const SaleSchema = SchemaFactory.createForClass(Sale);
+
+SaleSchema.plugin(mongoosePaginate);

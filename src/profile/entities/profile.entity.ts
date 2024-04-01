@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { User } from '../../users/entities/user.entity';
+import mongoosePaginate from '@app/common/mongoosePaginate';
 
 export type ProfileDocument = HydratedDocument<Profile> & {
   fullName: string;
@@ -39,3 +40,4 @@ export class Profile {
 }
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);
+ProfileSchema.plugin(mongoosePaginate);

@@ -1,4 +1,15 @@
 import { Schema } from 'mongoose';
+import { SaleDocument } from 'src/sales/entities/sale.entity';
+
+export type SearchQuery = {
+  from?: string;
+  to?: string;
+};
+
+export type PaginateOptions = {
+  page?: number;
+  limit?: number;
+};
 export interface GetGoogleAuth {
   accessToken: string;
   refreshToken: string;
@@ -25,4 +36,25 @@ export interface CreateNormalAuth {
   accessToken: string;
   refreshToken: string;
   sessionToken: string;
+}
+
+export interface PaginatedResponse {
+  meta: {
+    totalItems: number;
+    currentPage: number;
+    itemsPerPage: number;
+    totalPages: number;
+  };
+}
+
+export interface SaleResponse {
+  statusCode: number;
+  message?: string;
+  sale: SaleDocument;
+}
+
+export interface SalesResponse extends PaginatedResponse {
+  statusCode: number;
+  message?: string;
+  sales: SaleDocument[];
 }

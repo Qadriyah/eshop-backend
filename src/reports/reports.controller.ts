@@ -19,10 +19,7 @@ export class ReportsController {
   ) {}
 
   @Get('sales')
-  async getSalesReport(
-    @Query('start-date') from: string,
-    @Query('end-date') to: string,
-  ) {
+  async getSalesReport(@Query() { from, to }) {
     const query: FilterQuery<SaleDocument> = {
       status: {
         $nin: [
@@ -46,10 +43,7 @@ export class ReportsController {
   }
 
   @Get('returns')
-  async getReturnsReport(
-    @Query('start-date') from: string,
-    @Query('end-date') to: string,
-  ) {
+  async getReturnsReport(@Query() { from, to }) {
     const query: FilterQuery<SaleDocument> = {
       status: SALE_STATUS.returned,
       createdAt: {
@@ -67,10 +61,7 @@ export class ReportsController {
   }
 
   @Get('customer-orders')
-  async getCustomerOrders(
-    @Query('start-date') from: string,
-    @Query('end-date') to: string,
-  ) {
+  async getCustomerOrders(@Query() { from, to }) {
     const query: FilterQuery<SaleDocument> = {
       status: {
         $nin: [
@@ -94,10 +85,7 @@ export class ReportsController {
   }
 
   @Get('product-report')
-  async getProductsRepoprt(
-    @Query('start-date') from: string,
-    @Query('end-date') to: string,
-  ) {
+  async getProductsRepoprt(@Query() { from, to }) {
     const query: FilterQuery<SaleDocument> = {
       status: {
         $nin: [
@@ -117,6 +105,30 @@ export class ReportsController {
     return {
       statusCode: HttpStatus.OK,
       report,
+    };
+  }
+
+  @Get('sales/sold')
+  async getCompletedSales(@Query() { from, to }) {
+    const query: FilterQuery<SaleDocument> = {
+      status: {
+        $nin: [
+          SALE_STATUS.cancelled,
+          SALE_STATUS.pending,
+          SALE_STATUS.returned,
+        ],
+      },
+      createdAt: {
+        $gte: this.commonService.resetTime(from),
+        $lte: to
+          ? moment(to).add(23, 'hours').toISOString()
+          : moment(from).add(23, 'hours').toISOString(),
+      },
+    };
+    const sales = await this.reportsService.getCompletedSales(query);
+    return {
+      statusCode: HttpStatus.OK,
+      sales,
     };
   }
 }

@@ -223,4 +223,36 @@ export class ReportsService {
       });
     }
   }
+
+  async getCompletedSales(
+    query: FilterQuery<SaleDocument>,
+  ): Promise<SaleDocument[]> {
+    try {
+      const result = await this.ordersRepository
+        .find(query)
+        .populate([
+          {
+            path: 'user',
+            select: 'email avator roles',
+            populate: [{ path: 'profile' }],
+          },
+        ])
+        .sort('-createdAt');
+      return result;
+    } catch (err) {
+      this.logger.error('sales.service.getCompletedSales', err);
+      if (err.status !== 500) {
+        throw err;
+      }
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'order',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
 }
