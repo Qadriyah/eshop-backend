@@ -13,8 +13,8 @@ import { UserRepository } from './users.repository';
 import { UserDocument } from './entities/user.entity';
 import { ProfileRepository } from '../profile/profile.repository';
 import { ProfileDocument } from '../profile/entities/profile.entity';
-import { USER_TYPES } from '@app/common';
-import { FilterQuery } from 'mongoose';
+import { PaginateOptions } from '@app/common';
+import { FilterQuery, PaginateResult } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -71,16 +71,22 @@ export class UsersService {
     }
   }
 
-  async findAll(userType?: string): Promise<UserDocument[]> {
+  async findAll(
+    query: FilterQuery<UserDocument>,
+    options: PaginateOptions,
+  ): Promise<PaginateResult<UserDocument>> {
     try {
-      const query: FilterQuery<UserDocument> = { deleted: false };
-      if (userType) {
-        query.roles = USER_TYPES[userType.toLocaleLowerCase()];
-      }
-      const users = await this.userRepository
-        .find(query)
-        .populate([{ path: 'profile' }]);
-      return users;
+      const result = await this.userRepository.paginate(query, {
+        ...options,
+        populate: [
+          {
+            path: 'profile',
+          },
+        ],
+        sort: '-createdAt',
+        lean: false,
+      });
+      return result;
     } catch (err) {
       this.logger.error('user.service.findAll', err);
       if (err.status !== 500) {
