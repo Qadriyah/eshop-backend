@@ -19,6 +19,8 @@ import {
 } from './users.pipe';
 import { UserDocument } from './entities/user.entity';
 import { AuthGuard } from '../auth/auth.guard';
+import { FilterQuery } from 'mongoose';
+import { PaginateOptions, USER_TYPES } from '@app/common';
 
 @UseGuards(AuthGuard)
 @Controller('users')
@@ -41,11 +43,29 @@ export class UsersController {
   }
 
   @Get()
-  async findAll(@Query() { user }) {
-    const users = await this.usersService.findAll(user);
+  async findAll(@Query() { user, page, limit }) {
+    const query: FilterQuery<UserDocument> = {};
+    const options: PaginateOptions = { page, limit };
+    if (!page) options.page = 1;
+    if (!limit) options.limit = 50;
+    if (user) query.roles = USER_TYPES[user.toLocaleLowerCase()];
+
+    const {
+      docs: users,
+      totalDocs: totalItems,
+      page: currentPage,
+      limit: itemsPerPage,
+      totalPages,
+    } = await this.usersService.findAll(query, options);
     return {
       statusCode: HttpStatus.OK,
       users,
+      meta: {
+        totalItems,
+        currentPage,
+        itemsPerPage,
+        totalPages,
+      },
     };
   }
 

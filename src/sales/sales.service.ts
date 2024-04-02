@@ -163,7 +163,7 @@ export class SalesService {
             populate: [{ path: 'profile' }],
           },
         ],
-        sort: '-createdAt',
+        sort: { createdAt: -1 },
       });
       return result;
     } catch (err) {

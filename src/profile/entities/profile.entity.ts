@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
-import { User } from '../../users/entities/user.entity';
 import mongoosePaginate from '@app/common/mongoosePaginate';
+import { User } from '../../users/entities/user.entity';
 
 export type ProfileDocument = HydratedDocument<Profile> & {
   fullName: string;
