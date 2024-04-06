@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto, ProductResponse } from './dto/create-product.dto';
@@ -17,6 +18,8 @@ import {
   CreateProductValidationPipe,
   UpdateProductValidationPipe,
 } from './product.pipe';
+import { FilterQuery } from 'mongoose';
+import { ProductDocument } from './entities/product.entity';
 
 @Controller('products')
 export class ProductController {
@@ -36,8 +39,12 @@ export class ProductController {
   }
 
   @Get()
-  async findAll(): Promise<ProductResponse> {
-    const products = await this.productService.findAll();
+  async findAll(@Query() { status }): Promise<ProductResponse> {
+    const query: FilterQuery<ProductDocument> = {};
+    if (status) {
+      query.status = status;
+    }
+    const products = await this.productService.findAll(query);
     return {
       statusCode: HttpStatus.OK,
       products,

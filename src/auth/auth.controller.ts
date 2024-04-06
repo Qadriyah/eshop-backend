@@ -67,7 +67,7 @@ export class AuthController {
     }
     const expires = new Date();
     expires.setSeconds(
-      expires.getSeconds() + this.configService.get('JWT_TTL_SEC'),
+      expires.getSeconds() + this.configService.get('JWT_TTL'),
     );
     response.cookie('authentication', accessToken, {
       httpOnly: true,

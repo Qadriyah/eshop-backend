@@ -15,6 +15,7 @@ import { UserRepository } from '../users/users.repository';
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);
+
   constructor(
     private jwtService: JwtService,
     private userRepository: UserRepository,
@@ -78,9 +79,10 @@ export class AuthGuard implements CanActivate {
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
-    const user = await this.userRepository.findOne({
+    let user = await this.userRepository.findOne({
       refreshToken: token,
       deleted: false,
+      suspended: false,
     });
 
     if (!user) {
@@ -99,15 +101,15 @@ export class AuthGuard implements CanActivate {
         ],
       });
     }
+    this.logger.warn('AuthGuard.refreshToken', 'Token refresh');
     const payload = this.commonService.getTokenPayload({
       id: user.id,
       email: user.email,
       roles: user.roles,
     });
     const accessToken = await this.jwtService.signAsync(payload);
-    const rToken = randtoken.uid(256);
-    user.refreshToken = rToken;
-    await this.userRepository.findOneAndUpdate(
+    const rToken = randtoken.uid(25);
+    user = await this.userRepository.findOneAndUpdate(
       { _id: user.id },
       { refreshToken: rToken },
     );
@@ -117,7 +119,7 @@ export class AuthGuard implements CanActivate {
       .cookie('authentication', accessToken, {
         httpOnly: true,
       })
-      .cookie('rtoken', rToken, {
+      .cookie('rtoken', user.refreshToken, {
         httpOnly: true,
       })
       .cookie('_session-token', user.id);
@@ -135,6 +137,7 @@ export class AuthGuard implements CanActivate {
       .findOne({
         _id: userId,
         deleted: false,
+        suspended: false,
       })
       .populate(['profile']);
 
