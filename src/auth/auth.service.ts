@@ -53,11 +53,12 @@ export class AuthService {
 
   async create(createAuthDto: CreateAuthDto): Promise<CreateNormalAuth> {
     try {
-      const user = await this.userRepository
+      let user = await this.userRepository
         .findOne({
           email: createAuthDto.email,
           $or: [{ roles: USER_TYPES.customer }, { roles: USER_TYPES.admin }],
           deleted: false,
+          suspended: false,
         })
         ?.select('email password roles');
 
@@ -90,8 +91,8 @@ export class AuthService {
         });
       }
 
-      const refreshToken = randtoken.uid(256);
-      await this.userRepository.findOneAndUpdate(
+      const refreshToken = randtoken.uid(25);
+      user = await this.userRepository.findOneAndUpdate(
         { _id: user._id },
         { refreshToken },
       );
@@ -105,7 +106,7 @@ export class AuthService {
 
       return {
         accessToken,
-        refreshToken,
+        refreshToken: user.refreshToken,
         sessionToken: user.id,
       };
     } catch (err) {
@@ -162,6 +163,7 @@ export class AuthService {
       let user = await this.userRepository.findOne({
         email: userInfo.email,
         deleted: false,
+        suspended: false,
       });
       const refreshToken = randtoken.uid(256);
       const hashedPassword = await bcrypt.hash(randtoken.uid(16), 10);
@@ -178,7 +180,7 @@ export class AuthService {
         const roles = user.roles.includes(USER_TYPES.admin)
           ? user.roles
           : [USER_TYPES.customer];
-        await this.userRepository.findOneAndUpdate(
+        user = await this.userRepository.findOneAndUpdate(
           { _id: user.id },
           {
             refreshToken,
@@ -199,7 +201,7 @@ export class AuthService {
       return {
         userId: user.id,
         accessToken,
-        refreshToken,
+        refreshToken: user.refreshToken,
         userInfo,
         sessionToken: user.id,
       };

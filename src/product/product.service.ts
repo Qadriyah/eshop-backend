@@ -9,6 +9,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductRepository } from './product.repository';
 import { ProductDocument } from './entities/product.entity';
+import { FilterQuery } from 'mongoose';
 
 @Injectable()
 export class ProductService {
@@ -39,9 +40,9 @@ export class ProductService {
     }
   }
 
-  async findAll() {
+  async findAll(query: FilterQuery<ProductDocument>) {
     try {
-      const products = await this.productRepo.find({});
+      const products = await this.productRepo.find(query);
       return products;
     } catch (err) {
       this.logger.error('product.service.findAll', err);
