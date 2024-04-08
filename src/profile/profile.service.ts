@@ -100,10 +100,14 @@ export class ProfileService {
           updateProfileDto as unknown as ProfileDocument,
         );
       } else {
-        profile = await this.profileRepository.findOneAndUpdate(
-          { _id: profile.id },
-          updateProfileDto,
-        );
+        profile = await this.profileRepository
+          .findOneAndUpdate({ _id: profile.id }, updateProfileDto)
+          .populate([
+            {
+              path: 'user',
+              select: 'email roles avator',
+            },
+          ]);
       }
 
       return profile;
