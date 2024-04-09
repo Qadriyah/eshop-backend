@@ -43,6 +43,7 @@ import { RbacModule } from './rbac/rbac.module';
         STRIPE_WEBHOOK_TOKEN: Joi.string().required(),
         SENDGRID_API_KEY: Joi.string().required(),
         EMAIL_SENDER: Joi.string().required(),
+        REDIRECT_DASHBOARD_URL: Joi.string().required(),
       }),
       // envFilePath: `./config/${process.env.NODE_ENV}.env`,
     }),

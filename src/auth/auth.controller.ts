@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Get,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -14,11 +15,24 @@ import {
   CreateAuthDto,
   CreateVisitorAuthDto,
 } from './dto/create-auth.dto';
-import { AuthPipe, VisitorAuthPipe } from './auth.pipe';
+import {
+  AuthPipe,
+  ResetPasswordByLinkPipe,
+  ResetPasswordRequestPipe,
+  VisitorAuthPipe,
+} from './auth.pipe';
 import { whitelistOrigins } from '../main';
 import { ConfigService } from '@nestjs/config';
 import { ProfileService } from '../profile/profile.service';
 import { CustomersService } from '../customers/customers.service';
+import {
+  ResetPasswordByLinkDto,
+  ResetPasswordRequestDto,
+} from './dto/reset-password.dto';
+import { EmailsService } from 'src/emails/emails.service';
+import { CurrentUser } from './current.user.decorator';
+import { UserDocument } from 'src/users/entities/user.entity';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +41,7 @@ export class AuthController {
     private readonly configService: ConfigService,
     private readonly customerService: CustomersService,
     private readonly profileService: ProfileService,
+    private readonly emailService: EmailsService,
   ) {}
 
   @Post('login')
@@ -148,6 +163,47 @@ export class AuthController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Success',
+    };
+  }
+
+  @Post('reset-password-request')
+  async resetPasswordRequest(
+    @Body(ResetPasswordRequestPipe) data: ResetPasswordRequestDto,
+  ) {
+    const accessToken = await this.authService.resetPasswordRequest(data.email);
+
+    await this.emailService.create({
+      from: this.configService.get('EMAIL_SENDER'),
+      to: data.email,
+      fromName: 'Notifications',
+      subject: 'Reset Password',
+      template: 'password_reset',
+      body: {
+        link: `${this.configService.get(
+          'REDIRECT_DASHBOARD_URL',
+        )}/rest-password?token=${accessToken}`,
+        email: data.email,
+      },
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Success',
+      accessToken,
+    };
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('reset-password-request/link')
+  async resetPasswordByLink(
+    @Body(ResetPasswordByLinkPipe) data: ResetPasswordByLinkDto,
+    @CurrentUser() user: UserDocument,
+  ) {
+    await this.authService.resetPasswordByLink(user.id, data.password);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Password has been reset successfully',
     };
   }
 }

@@ -8,10 +8,12 @@ import { ProfileModule } from '../profile/profile.module';
 import { CommonService } from '@app/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CustomersService } from '../customers/customers.service';
+import { EmailsService } from 'src/emails/emails.service';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, CommonService, CustomersService],
+  providers: [AuthService, CommonService, CustomersService, EmailsService],
   imports: [
     UsersModule,
     ProfileModule,
@@ -27,6 +29,9 @@ import { CustomersService } from '../customers/customers.service';
         };
       },
       inject: [ConfigService],
+    }),
+    BullModule.registerQueue({
+      name: 'email',
     }),
   ],
 })

@@ -259,4 +259,89 @@ export class AuthService {
       });
     }
   }
+
+  async resetPasswordRequest(email: string): Promise<string> {
+    try {
+      const user = await this.userRepository.findOne({
+        email,
+        deleted: false,
+        suspended: false,
+      });
+
+      if (!user) {
+        throw new NotFoundException({
+          statusCode: HttpStatus.NOT_FOUND,
+          errors: [
+            {
+              field: 'email',
+              message: 'User was not found',
+            },
+          ],
+        });
+      }
+
+      const payload = this.commonService.getTokenPayload({
+        id: user._id,
+        email: user.email,
+        roles: user.roles,
+      });
+      const accessToken = await this.jwtService.signAsync(payload);
+
+      return accessToken;
+    } catch (err) {
+      this.logger.error('auth.service.resetPasswordRequest', err);
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'email',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
+
+  async resetPasswordByLink(
+    userId: string,
+    password: string,
+  ): Promise<UserDocument> {
+    try {
+      let user = await this.userRepository.findOne({
+        _id: userId,
+        deleted: false,
+        suspended: false,
+      });
+
+      if (!user) {
+        throw new NotFoundException({
+          statusCode: HttpStatus.NOT_FOUND,
+          errors: [
+            {
+              field: 'email',
+              message: 'User was not found',
+            },
+          ],
+        });
+      }
+
+      user = await this.userRepository.findOneAndUpdate({ _id: userId }, {
+        password: await bcrypt.hash(password, 10),
+        refreshToken: randtoken.uid(256),
+      } as UserDocument);
+
+      return user;
+    } catch (err) {
+      this.logger.error('auth.service.resetPasswordByLink', err);
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errors: [
+          {
+            field: 'email',
+            message: 'Something went wrong',
+          },
+        ],
+      });
+    }
+  }
 }

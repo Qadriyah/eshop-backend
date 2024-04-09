@@ -16,7 +16,7 @@ export interface mailOptionsProps {
   to: string;
   subject: string;
   template: string;
-  body?: any;
+  body: any;
 }
 
 Handlebars.registerHelper(
@@ -34,7 +34,10 @@ export class EmailsService {
 
   async create(mailOptions: mailOptionsProps): Promise<Error | any> {
     try {
-      const emailBody = await this.getEmailBody({}, mailOptions.template);
+      const emailBody = await this.getEmailBody(
+        mailOptions.body,
+        mailOptions.template,
+      );
       await this.emailQueue.add({
         to: mailOptions.to,
         from: {

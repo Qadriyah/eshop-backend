@@ -32,6 +32,7 @@ export class MessagesService {
         fromName: 'Notifications',
         subject: 'Contact Form',
         template: 'contact_us',
+        body: {},
       });
       return message;
     } catch (err) {
