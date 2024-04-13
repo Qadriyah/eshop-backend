@@ -181,7 +181,7 @@ export class AuthController {
       body: {
         link: `${this.configService.get(
           'REDIRECT_DASHBOARD_URL',
-        )}/rest-password?token=${accessToken}`,
+        )}/forgot-password/create-new-password?token=${accessToken}`,
         email: data.email,
       },
     });

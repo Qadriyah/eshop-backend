@@ -79,6 +79,7 @@ export class ProfileController {
     });
     return {
       statusCode: HttpStatus.OK,
+      message: 'Your details have been updated successfully',
       profile,
     };
   }
