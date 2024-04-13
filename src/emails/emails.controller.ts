@@ -15,6 +15,7 @@ export class EmailsController {
       fromName: 'Support',
       subject: 'Inquiry',
       template: 'contact_us',
+      body: '',
     });
     return email;
   }
