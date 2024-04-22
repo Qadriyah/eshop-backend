@@ -1,0 +1,63 @@
+version: '3.7'
+
+services:
+  dev:
+    container_name: api_dev
+    image: api-dev:1.0.0
+    build: .
+    command: npm run start:dev
+    ports:
+      - '3001:3001'
+    env_file:
+      - .env
+    networks:
+      - api-network
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
+  prod:
+    container_name: api_prod
+    image: api-prod:1.0.0
+    build: .
+    command: npm run start:prod
+    ports:
+      - '3001:3001'
+    env_file:
+      - .env
+    networks:
+      - api-network
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    volumes:
+      - ./database:/data/db
+    ports:
+      - '27017:27017'
+    networks:
+      - api-network
+    env_file:
+      - .env
+    restart: always
+
+  redis:
+    image: redis:alpine
+    container_name: redis_server
+    ports:
+      - '6379:6379'
+
+networks:
+  api-network:
+    driver: bridge

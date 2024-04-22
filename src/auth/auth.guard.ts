@@ -60,7 +60,7 @@ export class AuthGuard implements CanActivate {
   ): string | undefined {
     const request = context.switchToHttp().getRequest();
     let token = request.cookies?.[name];
-    if (!token) {
+    if (name === 'authentication' && !token) {
       token = request.query.token;
     }
 
