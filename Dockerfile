@@ -30,6 +30,6 @@ COPY . .
 
 COPY --from=development /usr/src/app/dist ./dist
 
-EXPOSE 8080
-# CMD [ "node", "dist/main.js" ]
+EXPOSE 3001
+CMD [ "npm", "start:prod" ]
 USER node
