@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { LoggerService } from './logger/logger.service';
+import { ExpressAdapter } from '@nestjs/platform-express';
 
 export const whitelistOrigins = [
   'http://localhost:3000',
@@ -16,7 +17,9 @@ export const whitelistOrigins = [
 ];
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const adapter = new ExpressAdapter();
+  adapter.set('trust proxy', 1);
+  const app = await NestFactory.create(AppModule, adapter, {
     bufferLogs: true,
     rawBody: true,
   });
@@ -43,7 +46,7 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
-  app.setGlobalPrefix('/api');
+  app.setGlobalPrefix('/server/api');
   app.useLogger(app.get(LoggerService));
   await app.listen(configService.get('PORT'));
 }

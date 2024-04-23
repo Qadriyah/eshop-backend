@@ -42,7 +42,7 @@ export class ProductService {
 
   async findAll(query: FilterQuery<ProductDocument>) {
     try {
-      const products = await this.productRepo.find(query);
+      const products = await this.productRepo.find(query).sort('-createdAt');
       return products;
     } catch (err) {
       this.logger.error('product.service.findAll', err);
