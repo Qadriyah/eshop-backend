@@ -12,7 +12,7 @@ RUN npm install --only=development
 
 COPY . .
 
-# RUN npm run build
+RUN npm run build
 
 FROM node:18 AS production
 
@@ -24,7 +24,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY tsconfig*.json ./
 
-RUN npm install --only=production
+RUN npm install --omit=dev
 
 COPY . .
 
