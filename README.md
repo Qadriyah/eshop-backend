@@ -1,73 +1,73 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# eShop API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+eShop is an e-commerce tool used to sell goods online
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This repo holds code for eShop API
 
-## Description
+## Table of contents
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Tools](#tools)
+- [Setup](#setup)
+- [To install dependencies run](#to-install-dependencies-run)
+- [Set environment variables](#set-environment-variables)
+- [Running tests](#running-tests)
+- [Starting local development server](#starting-local-development-server)
 
-## Installation
+## Tools
 
-```bash
-$ npm install
+- [Node](https://nodejs.org/docs/latest/api/) - A Javascript runtime environment.
+- [Nest](https://docs.nestjs.com/) - A progressive Node.js framework for building efficient, reliable and scalable server-side applications.
+- [NPM](https://www.npmjs.com/) - A package manager
+
+## Setup
+
+Clone the repository:
+
+```
+git clone https://github.com/Qadriyah/eshop-backend.git
 ```
 
-## Running the app
+Then change to project directory:
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```
+cd eshop-backend
 ```
 
-## Test
+#### To install dependencies run:
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```
+npm install
 ```
 
-## Support
+This will install all the dependencies defined in the `package.json` file inside the eshop-backend folder.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+#### Set environment variables
 
-## Stay in touch
+Be sure to set the environment variables shown in the `.env.example` file
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Running tests
 
-## License
+TODO
 
-Nest is [MIT licensed](LICENSE).
+### Starting local development server
+
+#### With docker
+
+- Install `docker-compose` [Guidelines](https://docs.docker.com/compose/install/)
+  Once the installation is complete, run the following command to build the application with docker
+
+```
+docker-compose up dev --build
+```
+
+#### Without docker
+
+```
+npm run start:dev
+```
+
+After starting the local development server, application can be accessed at the PORT specified in the .env file
+
+```
+localhost:PORT
+```
